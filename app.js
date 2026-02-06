@@ -110,13 +110,17 @@ async function checkAuthStatus() {
         logoutLi.innerHTML = `<a href="#" onclick="handleLogout(event)">로그아웃</a>`;
         navLinks.appendChild(logoutLi);
     } else {
-        // Logged Out - Add Login/Signup if not present in static HTML
-        // (Our static HTML already has them, but we might want to manage duplicates if we were strict)
-        // For simplicity, we assume static HTML has Login/Signup and we remove them IF logged in.
-        // Wait, the logic above 'remove existing' removes them based on class 'auth-item'.
-        // In index.html step 260, li items do NOT have class 'auth-item'.
-        // I need to update index.html to add class 'auth-item' to login/signup links, OR update this script to find them by href.
-        // But for now, fixing the Booking Form is priority.
+        // Logged Out
+        // 로그인/회원가입 버튼이 없으면 추가
+        const loginLi = document.createElement('li');
+        loginLi.className = 'auth-item';
+        loginLi.innerHTML = `<a href="login.html">로그인</a>`;
+        navLinks.appendChild(loginLi);
+
+        const signupLi = document.createElement('li');
+        signupLi.className = 'auth-item';
+        signupLi.innerHTML = `<a href="signup.html" class="btn-reserve">회원가입</a>`;
+        navLinks.appendChild(signupLi);
     }
 }
 
