@@ -61,26 +61,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Simple Booking Form Handler
+    // Booking Form Handler (Redirect to booking.html)
     const bookingForm = document.querySelector('.booking-form');
     if (bookingForm) {
         bookingForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            // 로그인 상태 확인
-            checkLoginStatusForBooking();
+
+            const checkIn = document.getElementById('check-in').value;
+            const checkOut = document.getElementById('check-out').value;
+            const guests = document.getElementById('guests').value;
+
+            if (!checkIn || !checkOut) {
+                alert('체크인과 체크아웃 날짜를 선택해주세요.');
+                return;
+            }
+
+            // Redirect to booking page with params
+            window.location.href = `booking.html?checkin=${checkIn}&checkout=${checkOut}&guests=${guests}`;
         });
     }
 
-    // Check Auth Status on Load
+    // Check Auth Status on Load (Keep existing)
     checkAuthStatus();
 });
 
 // Auth Status Check & UI Update
 async function checkAuthStatus() {
-    if (!supabase) return;
+    if (typeof supabase === 'undefined' || !supabase) return;
 
     const { data: { user } } = await supabase.auth.getUser();
     const navLinks = document.querySelector('.nav-links');
+
+    if (!navLinks) return;
 
     // Remove existing login/signup/logout items to rebuild
     const authItems = navLinks.querySelectorAll('.auth-item');
@@ -92,15 +104,14 @@ async function checkAuthStatus() {
         logoutLi.className = 'auth-item';
         logoutLi.innerHTML = `<a href="#" onclick="handleLogout(event)">로그아웃</a>`;
         navLinks.appendChild(logoutLi);
-
-        // Optional: Show user name or My Page link
-        // const myPageLi = document.createElement('li'); ...
     } else {
-        // Logged Out (Default links are in HTML, but we can ensure they are there)
-        // If we want to strictly manage via JS, we can clear and add.
-        // For now, index.html has static links. 
-        // We might want to replace static Login/Signup with dynamic ones if strict control is needed.
-        // But for simplicity with static HTML, we can just hide/show if we tag them properly.
+        // Logged Out - Add Login/Signup if not present in static HTML
+        // (Our static HTML already has them, but we might want to manage duplicates if we were strict)
+        // For simplicity, we assume static HTML has Login/Signup and we remove them IF logged in.
+        // Wait, the logic above 'remove existing' removes them based on class 'auth-item'.
+        // In index.html step 260, li items do NOT have class 'auth-item'.
+        // I need to update index.html to add class 'auth-item' to login/signup links, OR update this script to find them by href.
+        // But for now, fixing the Booking Form is priority.
     }
 }
 

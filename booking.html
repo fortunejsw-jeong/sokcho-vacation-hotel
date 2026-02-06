@@ -157,11 +157,18 @@
     <script>
         lucide.createIcons();
 
-        // 날짜 기본값 설정
+        // URL 파라미터 또는 기본값으로 날짜 설정
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramCheckin = urlParams.get('checkin');
+        const paramCheckout = urlParams.get('checkout');
+        const paramGuests = urlParams.get('guests');
+
         const today = new Date().toISOString().split('T')[0];
         const tomorrow = new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0];
-        document.getElementById('checkin').value = today;
-        document.getElementById('checkout').value = tomorrow;
+
+        document.getElementById('checkin').value = paramCheckin || today;
+        document.getElementById('checkout').value = paramCheckout || tomorrow;
+        if (paramGuests) document.getElementById('guests').value = paramGuests;
 
         // 객실 목록 불러오기
         async function loadRooms() {
