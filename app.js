@@ -83,6 +83,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Check Auth Status on Load (Keep existing)
     checkAuthStatus();
+
+    // Improve Date Input JS
+    // Make clicking anywhere on the date input open the picker
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    dateInputs.forEach(input => {
+        input.style.cursor = 'pointer';
+        input.addEventListener('click', (e) => {
+            // Prevent default to avoid conflict if browser handles it weirdly needed?
+            // Usually simply calling showPicker is enough.
+            if ('showPicker' in HTMLInputElement.prototype) {
+                try {
+                    input.showPicker();
+                } catch (err) {
+                    // Ignore errors (e.g. if already open or not supported)
+                }
+            }
+        });
+    });
+
+    // Improve Select Input Cursor
+    const selectInputs = document.querySelectorAll('select');
+    selectInputs.forEach(select => {
+        select.style.cursor = 'pointer';
+    });
 });
 
 // Auth Status Check & UI Update

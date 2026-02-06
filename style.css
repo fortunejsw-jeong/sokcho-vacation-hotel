@@ -507,6 +507,7 @@ header.scrolled .mobile-menu-btn {
     font-weight: 500;
     color: var(--text-dark);
     width: 100%;
+    cursor: pointer;
 }
 
 .input-group input:focus,
