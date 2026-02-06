@@ -4,19 +4,21 @@ const SUPABASE_URL = 'https://ojpicaadbflasknzvtmj.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_LpoSFzHRhfRT8p4c2svuAQ_pH_1bhwL';
 
 // Supabase가 로드되었는지 확인 및 클라이언트 초기화
-// CDN 방식에서는 'supabase' 전역 객체 안에 'createClient'가 있습니다.
-if (window.supabase && window.supabase.createClient) {
-    // 전역 supabase 객체를 클라이언트 인스턴스로 교체 (다른 파일 호환성 유지)
+// CDN 방식: window.supabase (라이브러리) -> window.supabase (클라이언트 인스턴스)로 교체
+
+if (window.supabase && typeof window.supabase.from === 'function') {
+    // 이미 초기화된 경우 (클라이언트 인스턴스임)
+    console.log('Supabase already initialized');
+} else if (window.supabase && window.supabase.createClient) {
+    // 라이브러리가 로드된 상태. 클라이언트 초기화 후 덮어씌우기
     window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    console.log('Supabase initialized');
-} else if (typeof createClient !== 'undefined') {
-    // 일부 환경(모듈 등)에서 createClient가 전역일 경우 대비
-    window.supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('Supabase initialized successfully');
 } else {
-    console.error('Supabase SDK가 로드되지 않았습니다.');
+    // 로드 실패 또는 순서 문제
+    console.error('Major Error: Supabase SDK not found. Make sure the CDN script tag is placed BEFORE this script.');
 }
-// 전역 변수 scope 확보를 위한 안전장치 (이미 window.supabase에 할당했지만 명시적으로)
-const supabase = window.supabase;
+
+// 이후 코드에서 'supabase'를 참조하면 window.supabase를 사용하게 됩니다.
 
 // 회원가입 함수
 async function signUp(email, password, name) {
