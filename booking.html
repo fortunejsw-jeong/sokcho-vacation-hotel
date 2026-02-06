@@ -196,7 +196,10 @@
                 // 객실 렌더링
                 roomList.innerHTML = rooms.map(room => `
                     <div class="room-card-grid fade-in-up">
-                        <div class="room-thumb" style="background-image: url('${room.image_url || 'images/default-room.jpg'}')"></div>
+                        <div class="room-thumb" 
+                             style="background-image: url('${room.image_url || 'images/default-room.jpg'}'); cursor: pointer;"
+                             onclick="bookRoom(${room.id}, '${room.name}', ${room.price})">
+                        </div>
                         <div class="room-details">
                             <h3>${room.name}</h3>
                             <p>${room.description || '편안한 휴식을 위한 객실입니다.'}</p>
@@ -264,7 +267,7 @@
                 orderId: orderId,
                 orderName: orderName,
                 customerName: user.user_metadata.full_name || '고객',
-                successUrl: origin + `/success.html?room_id=${roomId}&check_in=${checkin}&check_out=${checkOut}&guests=${guests}&user_id=${user.id}`,
+                successUrl: origin + `/success.html?room_id=${roomId}&check_in=${checkin}&check_out=${checkout}&guests=${guests}&user_id=${user.id}`,
                 failUrl: origin + '/booking.html', // 실패 시 다시 예약 페이지로
             }).catch(function (error) {
                 if (error.code === 'USER_CANCEL') {
