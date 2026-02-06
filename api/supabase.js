@@ -52,5 +52,27 @@ async function signOut() {
 // 현재 로그인한 사용자 가져오기
 async function getCurrentUser() {
     const { data: { user } } = await supabase.auth.getUser();
-    return user;
-}
+    // 내 예약 목록 가져오기 (객실 정보 포함)
+    async function getUserBookings(userId) {
+        const { data, error } = await supabase
+            .from('bookings')
+            .select(`
+            *,
+            rooms (
+                name,
+                image_url
+            )
+        `)
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+        return { data, error };
+    }
+
+    // 예약 취소하기
+    async function cancelBooking(bookingId) {
+        const { data, error } = await supabase
+            .from('bookings')
+            .update({ status: 'cancelled' })
+            .eq('id', bookingId);
+        return { data, error };
+    }

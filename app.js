@@ -100,6 +100,11 @@ async function checkAuthStatus() {
 
     if (user) {
         // Logged In
+        const myPageLi = document.createElement('li');
+        myPageLi.className = 'auth-item';
+        myPageLi.innerHTML = `<a href="mypage.html">마이페이지</a>`;
+        navLinks.appendChild(myPageLi);
+
         const logoutLi = document.createElement('li');
         logoutLi.className = 'auth-item';
         logoutLi.innerHTML = `<a href="#" onclick="handleLogout(event)">로그아웃</a>`;
