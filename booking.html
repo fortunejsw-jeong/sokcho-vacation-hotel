@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실시간 예약 | 속초 베케이션 호텔</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Supabase SDK & Toss Payments -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="api/supabase.js"></script>
+    <script src="https://js.tosspayments.com/v1/payment"></script>
+
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 예약 페이지 전용 스타일 */
+        .booking-header {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('images/hero-bg.jpg');
+            /* 메인 배경 재사용 */
+            background-size: cover;
+            background-position: center;
+            height: 40vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        .booking-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-end;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .filter-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .btn-check {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .room-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+
+<body>
+    <header id="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <span class="logo-text">SOKCHO VACATION</span>
+                <span class="logo-sub">HOTEL</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html#about">호텔 소개</a></li>
+                    <li><a href="index.html#rooms">객실</a></li>
+                    <li><a href="index.html#info">이용 안내</a></li>
+                    <li class="auth-item"><a href="login.html">로그인</a></li>
+                    <li class="auth-item"><a href="signup.html" class="btn-reserve">회원가입</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="booking-header">
+        <div>
+            <h1>실시간 예약</h1>
+            <p>원하는 날짜와 객실을 선택해주세요</p>
+        </div>
+    </div>
+
+    <main class="booking-container">
+        <!-- 날짜 선택 섹션 -->
+        <section class="filter-section">
+            <div class="filter-group">
+                <label>체크인</label>
+                <input type="date" id="checkin">
+            </div>
+            <div class="filter-group">
+                <label>체크아웃</label>
+                <input type="date" id="checkout">
+            </div>
+            <div class="filter-group">
+                <label>인원</label>
+                <input type="number" id="guests" value="2" min="1">
+            </div>
+            <button class="btn-check" onclick="loadRooms()">조회하기</button>
+        </section>
+
+        <!-- 객실 목록 섹션 -->
+        <div id="room-list" class="room-list">
+            <div class="empty-state">
+                <p>로딩 중...</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Sokcho Vacation Hotel. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+    <script>
+        lucide.createIcons();
+
+        // 날짜 기본값 설정
+        const today = new Date().toISOString().split('T')[0];
+        const tomorrow = new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0];
+        document.getElementById('checkin').value = today;
+        document.getElementById('checkout').value = tomorrow;
+
+        // 객실 목록 불러오기
+        async function loadRooms() {
+            const roomList = document.getElementById('room-list');
+            roomList.innerHTML = '<div class="empty-state"><p>객실 정보를 불러오는 중입니다...</p></div>';
+
+            if (!supabase) {
+                roomList.innerHTML = '<div class="empty-state"><p>데이터베이스 연결 오류</p></div>';
+                return;
+            }
+
+            // DB에서 객실 정보 조회
+            const { data: rooms, error } = await supabase.from('rooms').select('*').order('price');
+
+            if (error) {
+                console.error(error);
+                roomList.innerHTML = '<div class="empty-state"><p>객실 정보를 불러올 수 없습니다.<br>아직 데이터베이스 테이블이 생성되지 않았을 수 있습니다.</p></div>';
+                return;
+            }
+
+            if (!rooms || rooms.length === 0) {
+                roomList.innerHTML = '<div class="empty-state"><p>등록된 객실이 없습니다.</p></div>';
+                return;
+            }
+
+            // 객실 렌더링
+            roomList.innerHTML = rooms.map(room => `
+                <div class="room-card-grid fade-in-up">
+                    <div class="room-thumb" style="background-image: url('${room.image_url || 'images/default-room.jpg'}')"></div>
+                    <div class="room-details">
+                        <h3>${room.name}</h3>
+                        <p>${room.description || '편안한 휴식을 위한 객실입니다.'}</p>
+                        <div class="room-tags">
+                            <span class="tag">기준 ${room.base_occupancy}인</span>
+                            <span class="tag">최대 ${room.max_occupancy}인</span>
+                        </div>
+                        <div class="room-price">
+                            ￦${room.price.toLocaleString()} / 1박
+                        </div>
+                        <button onclick="bookRoom(${room.id}, '${room.name}', ${room.price})" class="btn-reserve" style="width:100%; margin-top:1rem;">예약하기</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Toss Payments 초기화
+        const clientKey = 'test_ck_D5GePWvyJnrKwdP7V47gLzN97Eoq'; // 테스트 키
+        const tossPayments = TossPayments(clientKey);
+
+        // 예약 및 결제 버튼 핸들러
+        async function bookRoom(roomId, roomName, price) {
+            // 1. 로그인 체크
+            const user = await getCurrentUser();
+            if (!user) {
+                if (confirm('예약을 하려면 로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?')) {
+                    window.location.href = 'login.html';
+                }
+                return;
+            }
+
+            // 2. 날짜 및 인원 가져오기
+            const checkin = document.getElementById('checkin').value;
+            const checkout = document.getElementById('checkout').value;
+            const guests = document.getElementById('guests').value;
+
+            // 유효성 검사
+            if (!checkin || !checkout) {
+                alert('체크인과 체크아웃 날짜를 선택해주세요.');
+                return;
+            }
+
+            // 3. 결제 요청 (Toss Payments)
+            // 결제 성공 시 success.html로 이동하며 쿼리 파라미터로 예약 정보를 전달합니다.
+            // (실무에서는 보안을 위해 서버에서 처리해야 하지만, 데모용으로 클라이언트에서 처리)
+            const orderId = 'order_' + new Date().getTime(); // 고유 주문 번호 생성
+            const orderName = `${roomName} (${checkin} ~ ${checkout})`;
+
+            tossPayments.requestPayment('카드', {
+                amount: price,
+                orderId: orderId,
+                orderName: orderName,
+                customerName: user.user_metadata.full_name || '고객',
+                successUrl: window.location.origin + `/sokcho-vacation-hotel/success.html?room_id=${roomId}&check_in=${checkin}&check_out=${checkout}&guests=${guests}&user_id=${user.id}`,
+                failUrl: window.location.origin + '/sokcho-vacation-hotel/index.html',
+            }).catch(function (error) {
+                if (error.code === 'USER_CANCEL') {
+                    // 결제 취소
+                } else {
+                    alert('결제 실패: ' + error.message);
+                }
+            });
+        }
+
+        // 초기 로드
+        loadRooms();
+    </script>
+</body>
+
+</html>
