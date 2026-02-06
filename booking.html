@@ -228,7 +228,8 @@
         }
 
         // Toss Payments 초기화
-        const clientKey = 'test_ck_D5GePWvyJnrKwdP7V47gLzN97Eoq'; // 테스트 키
+        // 테스트용 클라이언트 키 (공식 문서 제공)
+        const clientKey = 'test_ck_D5GePWvyJnrKwdP7V47gLzN97Eoq';
         const tossPayments = TossPayments(clientKey);
 
         // 예약 및 결제 버튼 핸들러
@@ -254,26 +255,31 @@
             }
 
             // 3. 결제 요청 (Toss Payments)
-            const orderId = 'order_' + new Date().getTime(); // 고유 주문 번호 생성
-            const orderName = `${roomName} (${checkin} ~ ${checkout})`;
+            const orderId = 'order_' + new Date().getTime(); // 고유 주문 번호
+            const simpleOrderName = roomName; // 특수문자 제거 등 안전하게
 
-            // 현재 URL 경로 기반으로 리다이렉트 URL 설정 (Cloudflare Pages 호환)
+            // URL 생성
             const origin = window.location.origin;
-            // 로컬 테스트(file://)가 아닌 경우에만 origin 사용, 그렇지 않으면 상대 경로 사용 불가하므로 주의
-            // Cloudflare Pages는 root에서 실행되므로 origin + '/success.html'
+            const successUrl = new URL(origin + '/success.html');
+            successUrl.searchParams.append('room_id', roomId);
+            successUrl.searchParams.append('check_in', checkin);
+            successUrl.searchParams.append('check_out', checkout);
+            successUrl.searchParams.append('guests', guests);
+            successUrl.searchParams.append('user_id', user.id);
 
             tossPayments.requestPayment('카드', {
                 amount: price,
                 orderId: orderId,
-                orderName: orderName,
-                customerName: user.user_metadata.full_name || '고객',
-                successUrl: origin + `/success.html?room_id=${roomId}&check_in=${checkin}&check_out=${checkout}&guests=${guests}&user_id=${user.id}`,
-                failUrl: origin + '/booking.html', // 실패 시 다시 예약 페이지로
+                orderName: simpleOrderName,
+                customerName: user.user_metadata.full_name || '비회원',
+                successUrl: successUrl.toString(),
+                failUrl: origin + '/booking.html',
             }).catch(function (error) {
                 if (error.code === 'USER_CANCEL') {
-                    // 결제 취소
+                    // 사용자 취소
                 } else {
-                    alert('결제 실패: ' + error.message);
+                    console.error(error);
+                    alert('결제 초기화 실패: ' + error.message);
                 }
             });
         }
