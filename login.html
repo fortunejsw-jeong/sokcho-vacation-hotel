@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 | 속초 베케이션 호텔</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+
+    <!-- Supabase SDK (순서 중요: supabase.js보다 먼저 로드) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="api/supabase.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .auth-container {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            padding-top: 80px;
+            background-color: #f8f9fa;
+        }
+
+        .auth-card {
+            background: white;
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-header h2 {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        .btn-auth {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary-color, #1a2b3c);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-auth:hover {
+            background: #2c3e50;
+        }
+
+        .auth-links {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .auth-links a {
+            color: var(--primary-color, #1a2b3c);
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: #dc3545;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <header id="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <span class="logo-text">SOKCHO VACATION</span>
+                <span class="logo-sub">HOTEL</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>로그인</h2>
+                <p>속초 베케이션 호텔에 오신 것을 환영합니다</p>
+            </div>
+
+            <div id="error-msg" class="error-message"></div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">이메일</label>
+                    <input type="email" id="email" required placeholder="example@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" required placeholder="비밀번호를 입력하세요">
+                </div>
+                <button type="submit" class="btn-auth">로그인</button>
+            </form>
+
+            <div class="auth-links">
+                계정이 없으신가요? <a href="signup.html">회원가입</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('error-msg');
+
+            errorMsg.style.display = 'none';
+
+            if (!supabase) {
+                errorMsg.innerText = '시스템 오류: 서버 연결 실패';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            try {
+                const { data, error } = await signIn(email, password);
+
+                if (error) {
+                    throw error;
+                }
+
+                if (data.user) {
+                    // 로그인 성공 시 이전 페이지로 리다이렉트 또는 메인으로 이동
+                    // URL 파라미터에 returnUrl이 있으면 거기로, 없으면 홈으로
+                    // 간단하게 홈으로 이동 후 뒤로가기 방지
+                    window.location.replace('index.html');
+                }
+            } catch (err) {
+                errorMsg.innerText = '로그인 실패: ' + (err.message === 'Invalid login credentials' ? '이메일 또는 비밀번호가 일치하지 않습니다.' : err.message);
+                errorMsg.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+
+</html>
