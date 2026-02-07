@@ -354,11 +354,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-e.preventDefault();
-if (confirm('로그아웃 하시겠습니까?')) {
-    await signOut();
-    window.location.reload();
-}
+async function handleLogout(e) {
+    e.preventDefault();
+    if (confirm('로그아웃 하시겠습니까?')) {
+        const error = await signOut();
+        if (error) alert('로그아웃 실패: ' + error.message);
+        else window.location.reload();
+    }
 }
 
 async function checkLoginStatusForBooking() {

@@ -261,6 +261,32 @@
             }
         }
     </style>
+    <script>
+        // Debug Helper - Defined early in HEAD
+        function debugLog(msg) {
+            const consoleDiv = document.getElementById('debug-console');
+            if (consoleDiv) {
+                consoleDiv.style.display = 'block';
+                consoleDiv.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+            }
+            console.log(msg);
+        }
+
+        function debugError(msg) {
+            const consoleDiv = document.getElementById('debug-console');
+            if (consoleDiv) {
+                consoleDiv.style.display = 'block';
+                consoleDiv.innerHTML += `<div style="color:red; font-weight:bold;">[ERROR] ${msg}</div>`;
+            }
+            console.error(msg);
+        }
+
+        // Immediate check
+        window.addEventListener('error', function (e) {
+            // debugError('Global Syntax/Runtime Error: ' + e.message);
+            // alert('Global Error: ' + e.message);
+        });
+    </script>
 </head>
 
 <body>
@@ -290,6 +316,11 @@
     </div>
 
     <main class="booking-container">
+        <!-- Debug Console (Temporary) -->
+        <div id="debug-console"
+            style="background:#333; color:#0f0; padding:10px; margin-bottom:20px; font-family:monospace; display:none;">
+            <strong>Debug Log:</strong><br>
+        </div>
         <!-- 날짜 선택 섹션 -->
         <section class="filter-section">
             <div class="filter-group">
@@ -362,7 +393,22 @@
 
     <script src="app.js"></script>
     <script>
-        lucide.createIcons();
+        // Initialize Lucide icons safely on load
+        if (window.lucide) {
+            try { lucide.createIcons(); } catch (e) { console.warn(e); }
+        }
+
+        // IMPROVED DEBUGGING: Alert to confirm script execution
+        // alert('System Check: Script Loaded. Starting Supabase check...');
+
+        // Initial Check
+        debugLog('Script initializing...');
+        if (typeof supabase === 'undefined') {
+            debugError('Supabase is undefined immediately!');
+            // alert('Critical: Supabase SDK missing');
+        } else {
+            debugLog('Supabase SDK found.');
+        }
 
         // URL 파라미터 또는 기본값으로 날짜 설정
         const urlParams = new URLSearchParams(window.location.search);
@@ -392,16 +438,22 @@
             'default': []
         };
 
+        // 전역 객실 데이터 저장소
+        let allRoomsData = [];
+
         // 객실 목록 불러오기
         async function loadRooms() {
             const roomList = document.getElementById('room-list');
+            // debugLog('loadRooms started.');
 
             if (typeof supabase === 'undefined' || !supabase) {
+                debugError('Supabase SDK is missing or not initialized.');
                 roomList.innerHTML = '<div class="empty-state"><p style="color:red">데이터베이스 연결 오류</p><p>Supabase SDK가 로드되지 않았습니다.</p></div>';
                 return;
             }
 
             try {
+                // debugLog('Fetching rooms from Supabase...');
                 // DB에서 객실 정보 조회
                 const { data: rooms, error } = await supabase.from('rooms').select('*').order('price');
 
@@ -410,16 +462,24 @@
                 }
 
                 if (!rooms || rooms.length === 0) {
+                    debugLog('No rooms found in database.');
                     roomList.innerHTML = '<div class="empty-state"><p>등록된 객실이 없습니다.</p><p>관리자에게 문의해주세요. (DB 데이터 없음)</p></div>';
                     return;
                 }
 
+                // debugLog(`Fetched ${rooms.length} rooms.`);
+                // 전역 변수에 저장
+                allRoomsData = rooms;
+
                 // 객실 렌더링
+                // Direct onclick - Most reliable method
                 roomList.innerHTML = rooms.map(room => `
-                    <div class="room-card-grid fade-in-up">
+                    <div class="room-card-grid fade-in-up" 
+                         onclick="openRoomDetail('${room.id}')" 
+                         data-id="${room.id}" 
+                         style="cursor: pointer;">
                         <div class="room-thumb" 
-                             style="background-image: url('${room.image_url || 'images/default-room.jpg'}'); cursor: pointer;"
-                             onclick='openRoomDetail(${JSON.stringify(room).replace(/'/g, "&#39;")})'>
+                             style="background-image: url('${room.image_url || 'images/default-room.jpg'}');">
                         </div>
                         <div class="room-details">
                             <h3>${room.name}</h3>
@@ -431,12 +491,21 @@
                             <div class="room-price">
                                 ￦${room.price.toLocaleString()} / 1박
                             </div>
-                            <button onclick='openRoomDetail(${JSON.stringify(room).replace(/'/g, "&#39;")})' class="btn-reserve" style="width:100%; margin-top:1rem;">상세보기 및 예약</button>
+                            <!-- Button also triggers the same function, bubbling up is fine, or direct click -->
+                            <button class="btn-reserve" style="width:100%; margin-top:1rem;">상세보기 및 예약</button>
                         </div>
                     </div>
                 `).join('');
+
+                // debugLog('Rooms rendered successfully.');
+                // 애니메이션이 적용되지 않을 경우를 대비해 강제로 표시 (CSS 이슈 방지)
+                setTimeout(() => {
+                    const cards = document.querySelectorAll('.room-card-grid');
+                    cards.forEach(card => card.style.opacity = '1');
+                }, 100);
+
             } catch (err) {
-                console.error(err);
+                debugError('Error in loadRooms: ' + (err.message || JSON.stringify(err)));
                 roomList.innerHTML = `<div class="empty-state">
                     <p style="color:red; font-weight:bold;">객실 정보를 불러올 수 없습니다.</p>
                     <p style="color:#666;">${err.message || '알 수 없는 오류가 발생했습니다.'}</p>
@@ -450,7 +519,16 @@
 
         // --- Modal Logic ---
 
-        function openRoomDetail(room) {
+        function openRoomDetail(roomId) {
+            debugLog('openRoomDetail called with ID: ' + roomId);
+            // ID로 객실 데이터 찾기
+            const room = allRoomsData.find(r => r.id == roomId); // loose equality for string/number match
+
+            if (!room) {
+                console.error('Room not found:', roomId);
+                return;
+            }
+
             const modal = document.getElementById('room-modal');
             const mainImg = document.getElementById('modal-main-img');
             const subImagesDiv = document.getElementById('modal-sub-images');
@@ -501,7 +579,10 @@
             // Show Modal
             modal.classList.add('active');
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
-            lucide.createIcons();
+
+            if (window.lucide) {
+                try { lucide.createIcons(); } catch (e) { console.warn(e); }
+            }
         }
 
         function closeModal() {
@@ -518,6 +599,14 @@
                 else img.classList.remove('active');
             });
         }
+
+        // Explicitly expose to window - CRITICAL
+        window.openRoomDetail = openRoomDetail;
+
+        // DEBUG: Attach global click listener to see WHAT is being clicked
+        document.addEventListener('click', function (e) {
+            // debugLog('Global Click: ' + e.target.tagName + ' | Class: ' + e.target.className);
+        });
 
         // Close on outside click
         document.getElementById('room-modal').addEventListener('click', function (e) {
@@ -581,8 +670,15 @@
             });
         }
 
-        // 초기 로드
-        loadRooms();
+        // 초기 로드: DOMContentLoaded 후 실행
+        document.addEventListener('DOMContentLoaded', async () => {
+            // debugLog('DOM loaded. Starting initialization...');
+            try {
+                await loadRooms();
+            } catch (e) {
+                debugError('Global Error: ' + e.message);
+            }
+        });
     </script>
 </body>
 
