@@ -643,11 +643,10 @@
 
         // 초기 로드: DOMContentLoaded 후 실행
         document.addEventListener('DOMContentLoaded', async () => {
-            // debugLog('DOM loaded. Starting initialization...');
             try {
                 await loadRooms();
             } catch (e) {
-                debugError('Global Error: ' + e.message);
+                console.error('Global Error: ' + e.message);
             }
         });
     </script>
