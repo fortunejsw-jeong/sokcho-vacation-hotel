@@ -261,32 +261,7 @@
             }
         }
     </style>
-    <script>
-        // Debug Helper - Defined early in HEAD
-        function debugLog(msg) {
-            const consoleDiv = document.getElementById('debug-console');
-            if (consoleDiv) {
-                consoleDiv.style.display = 'block';
-                consoleDiv.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
-            }
-            console.log(msg);
-        }
 
-        function debugError(msg) {
-            const consoleDiv = document.getElementById('debug-console');
-            if (consoleDiv) {
-                consoleDiv.style.display = 'block';
-                consoleDiv.innerHTML += `<div style="color:red; font-weight:bold;">[ERROR] ${msg}</div>`;
-            }
-            console.error(msg);
-        }
-
-        // Immediate check
-        window.addEventListener('error', function (e) {
-            // debugError('Global Syntax/Runtime Error: ' + e.message);
-            // alert('Global Error: ' + e.message);
-        });
-    </script>
 </head>
 
 <body>
@@ -316,11 +291,7 @@
     </div>
 
     <main class="booking-container">
-        <!-- Debug Console (Temporary) -->
-        <div id="debug-console"
-            style="background:#333; color:#0f0; padding:10px; margin-bottom:20px; font-family:monospace; display:none;">
-            <strong>Debug Log:</strong><br>
-        </div>
+
         <!-- 날짜 선택 섹션 -->
         <section class="filter-section">
             <div class="filter-group">
