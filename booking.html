@@ -415,7 +415,7 @@
         // 객실 목록 불러오기
         async function loadRooms() {
             const roomList = document.getElementById('room-list');
-            // debugLog('loadRooms started.');
+
 
             if (typeof supabase === 'undefined' || !supabase) {
                 console.error('Supabase SDK is missing or not initialized.');
