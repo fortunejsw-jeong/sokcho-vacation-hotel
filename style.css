@@ -227,8 +227,8 @@ header.scrolled .mobile-menu-btn {
     justify-content: center;
     text-align: center;
     color: var(--white);
-    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('images/hero-bg.jpg');
-    /* Original Beach Sunset Background */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('images/hero_background.png');
+    /* Beach Sunset Background */
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
