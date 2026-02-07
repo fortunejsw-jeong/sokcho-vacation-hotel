@@ -607,30 +607,49 @@ footer {
 }
 
 .room-card-grid {
-    background: var(--white);
-    border-radius: 8px;
+    background: white;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    transition: transform 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    opacity: 0;
+    /* For animation */
+    /* Ensure clickability */
+    position: relative;
+    z-index: 10;
+    pointer-events: auto !important;
     display: flex;
     flex-direction: column;
 }
 
 .room-card-grid:hover {
     transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 .room-thumb {
-    height: 200px;
+    height: 250px;
     background-size: cover;
     background-position: center;
+    position: relative;
+    pointer-events: none;
+    /* Let clicks pass through to container */
 }
 
 .room-details {
     padding: 1.5rem;
+    pointer-events: none;
+    /* Let clicks pass through to container */
     flex: 1;
     display: flex;
     flex-direction: column;
+}
+
+.room-details button {
+    pointer-events: auto;
+    /* Buttons still clickable independently */
+    position: relative;
+    z-index: 20;
 }
 
 .room-details h3 {
