@@ -472,9 +472,12 @@
                 allRoomsData = rooms;
 
                 // 객실 렌더링
-                // Using Event Delegation: Added data-id attribute
+                // Direct onclick - Most reliable method
                 roomList.innerHTML = rooms.map(room => `
-                    <div class="room-card-grid fade-in-up" data-id="${room.id}" style="cursor: pointer;">
+                    <div class="room-card-grid fade-in-up" 
+                         onclick="openRoomDetail('${room.id}')" 
+                         data-id="${room.id}" 
+                         style="cursor: pointer;">
                         <div class="room-thumb" 
                              style="background-image: url('${room.image_url || 'images/default-room.jpg'}');">
                         </div>
@@ -488,6 +491,7 @@
                             <div class="room-price">
                                 ￦${room.price.toLocaleString()} / 1박
                             </div>
+                            <!-- Button also triggers the same function, bubbling up is fine, or direct click -->
                             <button class="btn-reserve" style="width:100%; margin-top:1rem;">상세보기 및 예약</button>
                         </div>
                     </div>
@@ -596,22 +600,12 @@
             });
         }
 
-        // Explicitly expose to window just in case
+        // Explicitly expose to window - CRITICAL
         window.openRoomDetail = openRoomDetail;
 
-        // Event Delegation for Room List
-        document.getElementById('room-list').addEventListener('click', function (e) {
-            // debugLog('Click detected on room-list: ' + e.target.tagName);
-            const card = e.target.closest('.room-card-grid');
-            if (card) {
-                const roomId = card.getAttribute('data-id');
-                // debugLog('Card clicked! ID: ' + roomId);
-                if (roomId) {
-                    openRoomDetail(roomId);
-                } else {
-                    debugError('Card clicked but no data-id found');
-                }
-            }
+        // DEBUG: Attach global click listener to see WHAT is being clicked
+        document.addEventListener('click', function (e) {
+            // debugLog('Global Click: ' + e.target.tagName + ' | Class: ' + e.target.className);
         });
 
         // Close on outside click

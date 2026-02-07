@@ -617,7 +617,7 @@ footer {
     /* Ensure clickability */
     position: relative;
     z-index: 10;
-    pointer-events: auto !important;
+    /* pointer-events: auto !important; */
     display: flex;
     flex-direction: column;
 }
@@ -632,13 +632,13 @@ footer {
     background-size: cover;
     background-position: center;
     position: relative;
-    pointer-events: none;
+    /* pointer-events: none; - REMOVED */
     /* Let clicks pass through to container */
 }
 
 .room-details {
     padding: 1.5rem;
-    pointer-events: none;
+    /* pointer-events: none; - REMOVED */
     /* Let clicks pass through to container */
     flex: 1;
     display: flex;
@@ -646,8 +646,7 @@ footer {
 }
 
 .room-details button {
-    pointer-events: auto;
-    /* Buttons still clickable independently */
+    /* pointer-events: auto; - REMOVED */
     position: relative;
     z-index: 20;
 }
