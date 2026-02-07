@@ -372,6 +372,37 @@
             try { lucide.createIcons(); } catch (e) { console.warn(e); }
         }
 
+        // IMPROVED DEBUGGING: Alert to confirm script execution
+        // alert('System Check: Script Loaded. checking Supabase...'); 
+
+        // Debug Helper - Defined early
+        function debugLog(msg) {
+            const consoleDiv = document.getElementById('debug-console');
+            if (consoleDiv) {
+                consoleDiv.style.display = 'block';
+                consoleDiv.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+            }
+            console.log(msg);
+        }
+
+        function debugError(msg) {
+            const consoleDiv = document.getElementById('debug-console');
+            if (consoleDiv) {
+                consoleDiv.style.display = 'block';
+                consoleDiv.innerHTML += `<div style="color:red; font-weight:bold;">[ERROR] ${msg}</div>`;
+            }
+            console.error(msg);
+        }
+
+        // Initial Check
+        debugLog('Script initializing...');
+        if (typeof supabase === 'undefined') {
+            debugError('Supabase is undefined immediately!');
+            // alert('Critical: Supabase SDK missing');
+        } else {
+            debugLog('Supabase SDK found.');
+        }
+
         // URL 파라미터 또는 기본값으로 날짜 설정
         const urlParams = new URLSearchParams(window.location.search);
         const paramCheckin = urlParams.get('checkin');
@@ -617,21 +648,6 @@
                     alert('결제 초기화 실패: ' + error.message);
                 }
             });
-        }
-
-        // Debug Helper
-        function debugLog(msg) {
-            const consoleDiv = document.getElementById('debug-console');
-            // consoleDiv.style.display = 'block'; // Always show for now
-            consoleDiv.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
-            console.log(msg);
-        }
-
-        function debugError(msg) {
-            const consoleDiv = document.getElementById('debug-console');
-            consoleDiv.style.display = 'block'; // Show on error
-            consoleDiv.innerHTML += `<div style="color:red; font-weight:bold;">[ERROR] ${msg}</div>`;
-            console.error(msg);
         }
 
         // 초기 로드: DOMContentLoaded 후 실행
