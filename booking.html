@@ -261,6 +261,32 @@
             }
         }
     </style>
+    <script>
+        // Debug Helper - Defined early in HEAD
+        function debugLog(msg) {
+            const consoleDiv = document.getElementById('debug-console');
+            if (consoleDiv) {
+                consoleDiv.style.display = 'block';
+                consoleDiv.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+            }
+            console.log(msg);
+        }
+
+        function debugError(msg) {
+            const consoleDiv = document.getElementById('debug-console');
+            if (consoleDiv) {
+                consoleDiv.style.display = 'block';
+                consoleDiv.innerHTML += `<div style="color:red; font-weight:bold;">[ERROR] ${msg}</div>`;
+            }
+            console.error(msg);
+        }
+
+        // Immediate check
+        window.addEventListener('error', function (e) {
+            // debugError('Global Syntax/Runtime Error: ' + e.message);
+            // alert('Global Error: ' + e.message);
+        });
+    </script>
 </head>
 
 <body>
@@ -373,32 +399,13 @@
         }
 
         // IMPROVED DEBUGGING: Alert to confirm script execution
-        // alert('System Check: Script Loaded. checking Supabase...'); 
-
-        // Debug Helper - Defined early
-        function debugLog(msg) {
-            const consoleDiv = document.getElementById('debug-console');
-            if (consoleDiv) {
-                consoleDiv.style.display = 'block';
-                consoleDiv.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
-            }
-            console.log(msg);
-        }
-
-        function debugError(msg) {
-            const consoleDiv = document.getElementById('debug-console');
-            if (consoleDiv) {
-                consoleDiv.style.display = 'block';
-                consoleDiv.innerHTML += `<div style="color:red; font-weight:bold;">[ERROR] ${msg}</div>`;
-            }
-            console.error(msg);
-        }
+        alert('System Check: Script Loaded. Starting Supabase check...');
 
         // Initial Check
         debugLog('Script initializing...');
         if (typeof supabase === 'undefined') {
             debugError('Supabase is undefined immediately!');
-            // alert('Critical: Supabase SDK missing');
+            alert('Critical: Supabase SDK missing');
         } else {
             debugLog('Supabase SDK found.');
         }
