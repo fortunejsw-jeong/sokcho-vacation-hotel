@@ -77,7 +77,12 @@ async function cancelBooking(bookingId) {
     const { data, error } = await supabase
         .from('bookings')
         .update({ status: 'cancelled' })
-        .eq('id', bookingId);
+        .eq('id', bookingId)
+        .select();
+
+    if (!error && (!data || data.length === 0)) {
+        return { data: null, error: { message: '예약 취소 권한이 없거나 이미 취소된 예약입니다. (DB 정책 확인 필요)' } };
+    }
     return { data, error };
 }
 
