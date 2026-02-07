@@ -55,6 +55,7 @@
             min-width: 200px;
         }
 
+
         .filter-group label {
             display: block;
             margin-bottom: 0.5rem;
@@ -91,6 +92,173 @@
             background: #f8f9fa;
             border-radius: 12px;
             grid-column: 1 / -1;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 1000px;
+            max-height: 90vh;
+            border-radius: 12px;
+            overflow-y: auto;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .modal-body {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .modal-gallery {
+            flex: 1.2;
+            min-width: 300px;
+            background: #f0f0f0;
+        }
+
+        .main-image-frame {
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+        }
+
+        .main-image-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .sub-images {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            overflow-x: auto;
+        }
+
+        .sub-images img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            cursor: pointer;
+            border-radius: 4px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .sub-images img:hover,
+        .sub-images img.active {
+            opacity: 1;
+            border: 2px solid var(--primary-color);
+        }
+
+        .modal-info {
+            flex: 1;
+            min-width: 300px;
+            padding: 2rem;
+        }
+
+        .modal-info h2 {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-description {
+            color: #555;
+            line-height: 1.6;
+            margin: 1.5rem 0;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .modal-tags {
+            margin-bottom: 1rem;
+        }
+
+        .modal-price-area {
+            background: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-price-area .price {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .amenity-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .amenity-grid span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        @media (max-width: 768px) {
+            .modal-body {
+                flex-direction: column;
+            }
+
+            .main-image-frame {
+                height: 250px;
+            }
         }
     </style>
 </head>
@@ -153,6 +321,45 @@
         </div>
     </footer>
 
+    <!-- Room Detail Modal -->
+    <div id="room-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()"><i data-lucide="x"></i></button>
+            <div class="modal-body">
+                <div class="modal-gallery">
+                    <div class="main-image-frame">
+                        <img id="modal-main-img" src="" alt="Room Main Image">
+                    </div>
+                    <div class="sub-images" id="modal-sub-images">
+                        <!-- Sub images injected here -->
+                    </div>
+                </div>
+                <div class="modal-info">
+                    <h2 id="modal-title">Room Name</h2>
+                    <div class="room-tags" id="modal-tags">
+                        <!-- Tags injected here -->
+                    </div>
+                    <p id="modal-desc" class="modal-description">Description goes here...</p>
+                    <div class="modal-price-area">
+                        <span class="price" id="modal-price">￦0 / 1박</span>
+                        <button id="modal-book-btn" class="btn-reserve" style="width:100%">예약하기</button>
+                    </div>
+                    <div class="modal-amenities">
+                        <h4>객실 편의시설</h4>
+                        <div class="amenity-grid">
+                            <span><i data-lucide="wifi"></i> WiFi</span>
+                            <span><i data-lucide="tv"></i> TV</span>
+                            <span><i data-lucide="wind"></i> 에어컨</span>
+                            <span><i data-lucide="coffee"></i> 커피포트</span>
+                            <span><i data-lucide="droplet"></i> 욕실용품</span>
+                            <span><i data-lucide="wind"></i> 헤어드라이어</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
     <script>
         lucide.createIcons();
@@ -170,10 +377,24 @@
         document.getElementById('checkout').value = paramCheckout || tomorrow;
         if (paramGuests) document.getElementById('guests').value = paramGuests;
 
+        // 추가 이미지 관리 (하드코딩)
+        const roomExtraImages = {
+            '스탠다드 더블': ['images/room-double.jpg', 'images/room-double-bath.jpg'],
+            '스탠다드 트윈': ['images/room-twin.jpg', 'images/room-double-bath.jpg', 'images/room-twin-view.jpg'],
+            '다이닝 룸': ['images/room-dining.jpg', 'images/room-dining-bath.jpg', 'images/room-dining-dishware.jpg'],
+            '무비 다이닝': ['images/room-movie-dining.jpg', 'images/room-movie-dining-view.jpg', 'images/room-movie-dining-bed.jpg', 'images/room-movie-dining-kitchen.jpg'],
+            '무비': ['images/room-movie.jpg', 'images/room-movie-view.jpg', 'images/room-movie-dining-bed.jpg', 'images/room-movie-dining-kitchen.jpg'],
+            '플레이': ['images/room-play.jpg', 'images/room-play-view.jpg', 'images/room-movie-dining-bed.jpg', 'images/room-movie-dining-kitchen.jpg'],
+            '키즈': ['images/room-kids-bed.jpg', 'images/room-kids-view.jpg', 'images/room-kids-bath.jpg'],
+            '비즈니스': ['images/room-business.jpg', 'images/room-business-view.jpg', 'images/room-business-relax.jpg', 'images/room-business-kitchen.jpg'],
+            '웰니스': ['images/room-wellness.jpg', 'images/room-wellness-view.jpg', 'images/room-wellness-bed.jpg', 'images/room-wellness-kitchen.jpg'],
+            // 기본값
+            'default': []
+        };
+
         // 객실 목록 불러오기
         async function loadRooms() {
             const roomList = document.getElementById('room-list');
-            // roomList.innerHTML = '<div class="empty-state"><p>객실 정보를 불러오는 중입니다...</p></div>'; // 이미 HTML에 있음
 
             if (typeof supabase === 'undefined' || !supabase) {
                 roomList.innerHTML = '<div class="empty-state"><p style="color:red">데이터베이스 연결 오류</p><p>Supabase SDK가 로드되지 않았습니다.</p></div>';
@@ -198,7 +419,7 @@
                     <div class="room-card-grid fade-in-up">
                         <div class="room-thumb" 
                              style="background-image: url('${room.image_url || 'images/default-room.jpg'}'); cursor: pointer;"
-                             onclick="bookRoom(${room.id}, '${room.name}', ${room.price})">
+                             onclick='openRoomDetail(${JSON.stringify(room).replace(/'/g, "&#39;")})'>
                         </div>
                         <div class="room-details">
                             <h3>${room.name}</h3>
@@ -210,7 +431,7 @@
                             <div class="room-price">
                                 ￦${room.price.toLocaleString()} / 1박
                             </div>
-                            <button onclick="bookRoom(${room.id}, '${room.name}', ${room.price})" class="btn-reserve" style="width:100%; margin-top:1rem;">예약하기</button>
+                            <button onclick='openRoomDetail(${JSON.stringify(room).replace(/'/g, "&#39;")})' class="btn-reserve" style="width:100%; margin-top:1rem;">상세보기 및 예약</button>
                         </div>
                     </div>
                 `).join('');
@@ -227,12 +448,88 @@
             }
         }
 
+        // --- Modal Logic ---
+
+        function openRoomDetail(room) {
+            const modal = document.getElementById('room-modal');
+            const mainImg = document.getElementById('modal-main-img');
+            const subImagesDiv = document.getElementById('modal-sub-images');
+
+            // Text Content
+            document.getElementById('modal-title').textContent = room.name;
+            document.getElementById('modal-desc').textContent = room.description || '편안한 휴식을 위한 객실입니다.';
+            document.getElementById('modal-price').textContent = `￦${room.price.toLocaleString()} / 1박`;
+
+            // Tags
+            const tagsDiv = document.getElementById('modal-tags');
+            tagsDiv.innerHTML = `
+                <span class="tag">기준 ${room.base_occupancy}인</span>
+                <span class="tag">최대 ${room.max_occupancy}인</span>
+            `;
+
+            // Images
+            const mainImgSrc = room.image_url || 'images/default-room.jpg';
+            // Start with main image
+            mainImg.src = mainImgSrc;
+
+            // Extra Images Logic
+            // If room name is in our extra list, use those. Otherwise just the main one.
+            // Also include the main image in the list if it's not already there?
+            // Let's just use the explicit list from roomExtraImages if available, prepending the main image if it's not in there.
+
+            let allImages = [];
+            if (roomExtraImages[room.name]) {
+                // Use defined images (make sure main image is first if desired, or just use the list)
+                // If the list in roomExtraImages includes the main image, great. If not, we might want to add it.
+                // In my config: '스탠다드 더블': ['images/room-double.jpg', 'images/room-double-bath.jpg']
+                // room.image_url is likely 'images/room-double.jpg'.
+                allImages = roomExtraImages[room.name];
+            } else {
+                allImages = [mainImgSrc];
+            }
+
+            // Render sub images
+            subImagesDiv.innerHTML = allImages.map((src, index) => `
+                <img src="${src}" onclick="changeMainImage(this.src)" class="${src === mainImgSrc ? 'active' : ''}">
+            `).join('');
+
+            // Book Button Logic
+            const bookBtn = document.getElementById('modal-book-btn');
+            // Remove old event listeners by cloning or just setting onclick
+            bookBtn.onclick = () => bookRoom(room.id, room.name, room.price);
+
+            // Show Modal
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            lucide.createIcons();
+        }
+
+        function closeModal() {
+            document.getElementById('room-modal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function changeMainImage(src) {
+            document.getElementById('modal-main-img').src = src;
+            // Highlight active thumb
+            const thumbs = document.querySelectorAll('#modal-sub-images img');
+            thumbs.forEach(img => {
+                if (img.src === src) img.classList.add('active'); // Exact match
+                else img.classList.remove('active');
+            });
+        }
+
+        // Close on outside click
+        document.getElementById('room-modal').addEventListener('click', function (e) {
+            if (e.target === this) closeModal();
+        });
+
+        // --- Payment Logic (Existing) ---
+
         // Toss Payments 초기화
-        // 테스트용 클라이언트 키 (사용자 제공)
         const clientKey = 'test_ck_Z61JOxRQVEBpvXZ7Glw2rW0X9bAq';
         const tossPayments = TossPayments(clientKey);
 
-        // 예약 및 결제 버튼 핸들러
         async function bookRoom(roomId, roomName, price) {
             // 1. 로그인 체크
             const user = await getCurrentUser();

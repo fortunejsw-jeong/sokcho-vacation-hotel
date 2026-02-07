@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    renderRooms(); // Render rooms on load
 
     // Navbar Scroll Effect
     const navbar = document.getElementById('navbar');
@@ -148,12 +149,216 @@ async function checkAuthStatus() {
     }
 }
 
-async function handleLogout(e) {
-    e.preventDefault();
-    if (confirm('로그아웃 하시겠습니까?')) {
-        await signOut();
-        window.location.reload();
+// Room Data Management
+const roomsData = [
+    {
+        id: 1,
+        name: '스탠다드 더블',
+        description: '모던한 분위기에 청결함으로 최적의 편안함을 제공하는 2인실입니다.',
+        baseOccupancy: 2,
+        maxOccupancy: 2,
+        price: 80000,
+        tags: ['2인', 'Queen Bed'],
+        thumbnail: 'images/room-double.jpg',
+        images: [
+            'images/room-double-01.jpg', // User uploaded
+            'images/room-double.jpg', // Fallback/Original
+            // Add more placeholders or duplicates if needed
+        ]
+    },
+    {
+        id: 2,
+        name: '스탠다드 트윈',
+        description: '기본 5성급 호텔 침구로 구성되어 있으며, 최대 3인까지 넉넉하게 쉴 수 있는 객실입니다.',
+        baseOccupancy: 3,
+        maxOccupancy: 3,
+        price: 100000,
+        tags: ['3인', 'Queen + Single'],
+        thumbnail: 'images/room-twin.jpg',
+        images: ['images/room-twin.jpg']
+    },
+    {
+        id: 3,
+        name: '다이닝 룸',
+        description: '식사를 위해 식탁과 의자가 마련된 분리된 다이닝 공간을 갖춘 특별한 객실입니다.',
+        baseOccupancy: 4,
+        maxOccupancy: 4,
+        price: 150000,
+        tags: ['4인', '2 Queen Beds', 'Dining Table'],
+        thumbnail: 'images/room-dining.jpg',
+        images: ['images/room-dining.jpg']
+    },
+    {
+        id: 4,
+        name: '무비 다이닝',
+        description: '맛있는 식사와 영화 감상을 동시에 즐길 수 있는 특별한 테마 객실입니다.',
+        baseOccupancy: 2, // Assume base 2? Description doesn't specify but tags say dining+cinema
+        maxOccupancy: 4, // Guessing based on similar rooms
+        price: 160000,
+        tags: ['다이닝+시네마', '대형스크린', '취사가능'],
+        thumbnail: 'images/room-movie-dining.jpg',
+        images: ['images/room-movie-dining.jpg']
+    },
+    {
+        id: 5,
+        name: '무비',
+        description: '프리미엄 사운드와 편안한 환경에서 영화와 드라마를 완벽하게 즐기는 시네마 전용 객실입니다.',
+        baseOccupancy: 2,
+        maxOccupancy: 2, // Guessing
+        price: 180000,
+        tags: ['시네마', '사운드바', '취사가능'],
+        thumbnail: 'images/room-movie.jpg',
+        images: ['images/room-movie.jpg']
+    },
+    {
+        id: 6,
+        name: '플레이',
+        description: '객실 안에서 즐거움을 만끽할 수 있도록 구성된 객실로 높은 만족도를 제공합니다.',
+        baseOccupancy: 2,
+        maxOccupancy: 4,
+        price: 180000,
+        tags: ['엔터테인먼트', '친구/커플', '취사가능'],
+        thumbnail: 'images/room-play.jpg',
+        images: ['images/room-play.jpg']
+    },
+    {
+        id: 7,
+        name: '키즈 룸',
+        description: '아이들의 안전과 재미를 고려한 공간 구성. 가족 여행에 최고의 만족을 제공합니다.',
+        baseOccupancy: 3,
+        maxOccupancy: 4,
+        price: 200000,
+        tags: ['가족여행', '아동친화', '취사가능'],
+        thumbnail: 'images/room-kids.jpg',
+        images: ['images/room-kids.jpg']
+    },
+    {
+        id: 8,
+        name: '비즈니스',
+        description: '넉넉한 공간의 워크스테이션, Wi-Fi, 스마트 TV. 업무와 휴식의 전환이 자연스러운 비즈니스 최적화 객실입니다.',
+        baseOccupancy: 1,
+        maxOccupancy: 2,
+        price: 200000,
+        tags: ['출장/업무', 'Workstation', '취사가능'],
+        thumbnail: 'images/room-business.jpg',
+        images: ['images/room-business.jpg']
+    },
+    {
+        id: 9,
+        name: '웰니스',
+        description: '일상에서 벗어나 온전한 쉼을 원하는 고객을 위해 설계된 프리미엄 힐링 타입 객실입니다.',
+        baseOccupancy: 2,
+        maxOccupancy: 2,
+        price: 220000,
+        tags: ['힐링', '프리미엄', '취사가능'],
+        thumbnail: 'images/room-wellness.jpg',
+        images: ['images/room-wellness.jpg']
     }
+];
+
+function renderRooms() {
+    const roomsContainer = document.querySelector('.rooms-grid');
+    if (!roomsContainer) return;
+
+    roomsContainer.innerHTML = roomsData.map((room, index) => `
+        <div class="room-card-grid scroll-reveal">
+            <div class="room-thumb" 
+                 style="background-image: url('${room.thumbnail}'); cursor: pointer;"
+                 onclick="openRoomModal(${index})">
+            </div>
+            <div class="room-details">
+                <h3>${room.name}</h3>
+                <div class="room-tags">
+                    ${room.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                </div>
+                <p>${room.description}</p>
+                <div class="room-price">${room.price.toLocaleString()}원 ~</div>
+                <button class="btn-primary" style="width:100%; margin-top:1rem;" onclick="openRoomModal(${index})">객실 상세보기</button>
+            </div>
+        </div>
+    `).join('');
+
+    // Re-trigger scroll reveal for new elements
+    const newElements = document.querySelectorAll('.scroll-reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.classList.add('active');
+        });
+    }, { threshold: 0.1 });
+    newElements.forEach(el => revealObserver.observe(el));
+}
+
+// Modal Logic
+let currentRoomIndex = 0;
+let currentImageIndex = 0;
+
+function openRoomModal(index) {
+    currentRoomIndex = index;
+    currentImageIndex = 0;
+    const room = roomsData[index];
+
+    // Find or create modal
+    let modal = document.getElementById('room-modal');
+    if (!modal) {
+        // Create modal structure if not exists (fail-safe)
+        console.error('Modal element not found');
+        return;
+    }
+
+    // Update Content
+    document.getElementById('modal-room-name').innerText = room.name;
+    document.getElementById('modal-room-desc').innerText = room.description;
+
+    updateModalImage();
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // Prevent scrolling background
+}
+
+function closeRoomModal() {
+    const modal = document.getElementById('room-modal');
+    if (modal) modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+function updateModalImage() {
+    const room = roomsData[currentRoomIndex];
+    const imgElement = document.getElementById('modal-main-image');
+    if (imgElement) imgElement.src = room.images[currentImageIndex];
+
+    // Update dots/indicators if we add them
+}
+
+function nextImage() {
+    const room = roomsData[currentRoomIndex];
+    currentImageIndex = (currentImageIndex + 1) % room.images.length;
+    updateModalImage();
+}
+
+function prevImage() {
+    const room = roomsData[currentRoomIndex];
+    currentImageIndex = (currentImageIndex - 1 + room.images.length) % room.images.length;
+    updateModalImage();
+}
+
+// Initial Render
+document.addEventListener('DOMContentLoaded', () => {
+    // ... existing setup ...
+    renderRooms(); // Call this
+
+    // Modal Event Listeners
+    const modal = document.getElementById('room-modal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeRoomModal();
+        });
+    }
+});
+e.preventDefault();
+if (confirm('로그아웃 하시겠습니까?')) {
+    await signOut();
+    window.location.reload();
+}
 }
 
 async function checkLoginStatusForBooking() {
