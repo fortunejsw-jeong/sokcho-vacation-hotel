@@ -472,9 +472,9 @@
                 allRoomsData = rooms;
 
                 // 객실 렌더링
-                // 클릭 범위 확대를 위해 카드 전체(room-card-grid)에 onclick 이벤트 추가
+                // Using Event Delegation: Added data-id attribute
                 roomList.innerHTML = rooms.map(room => `
-                    <div class="room-card-grid fade-in-up" onclick="openRoomDetail('${room.id}')" style="cursor: pointer;">
+                    <div class="room-card-grid fade-in-up" data-id="${room.id}" style="cursor: pointer;">
                         <div class="room-thumb" 
                              style="background-image: url('${room.image_url || 'images/default-room.jpg'}');">
                         </div>
@@ -595,6 +595,24 @@
                 else img.classList.remove('active');
             });
         }
+
+        // Explicitly expose to window just in case
+        window.openRoomDetail = openRoomDetail;
+
+        // Event Delegation for Room List
+        document.getElementById('room-list').addEventListener('click', function (e) {
+            // debugLog('Click detected on room-list: ' + e.target.tagName);
+            const card = e.target.closest('.room-card-grid');
+            if (card) {
+                const roomId = card.getAttribute('data-id');
+                // debugLog('Card clicked! ID: ' + roomId);
+                if (roomId) {
+                    openRoomDetail(roomId);
+                } else {
+                    debugError('Card clicked but no data-id found');
+                }
+            }
+        });
 
         // Close on outside click
         document.getElementById('room-modal').addEventListener('click', function (e) {
