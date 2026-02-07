@@ -641,16 +641,21 @@
             });
         }
 
-        // 초기 로드: window.onload로 확실하게 실행
-        window.addEventListener('load', async () => {
-            console.log('Window loaded, calling loadRooms...');
+        console.log('=== SCRIPT LOADED ===');
+        console.log('Supabase available:', typeof supabase !== 'undefined');
+        console.log('loadRooms function defined:', typeof loadRooms === 'function');
+
+        // 즉시 실행 - DOM이 준비될 때까지 짧은 지연
+        setTimeout(async () => {
+            console.log('=== EXECUTING loadRooms ===');
             try {
                 await loadRooms();
+                console.log('=== loadRooms COMPLETED ===');
             } catch (e) {
-                console.error('Global Error: ' + e.message);
+                console.error('=== loadRooms ERROR ===', e);
                 alert('객실 로딩 오류: ' + e.message);
             }
-        });
+        }, 500); // 500ms 후 실행
     </script>
 </body>
 
