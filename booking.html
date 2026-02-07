@@ -399,13 +399,13 @@
         }
 
         // IMPROVED DEBUGGING: Alert to confirm script execution
-        alert('System Check: Script Loaded. Starting Supabase check...');
+        // alert('System Check: Script Loaded. Starting Supabase check...');
 
         // Initial Check
         debugLog('Script initializing...');
         if (typeof supabase === 'undefined') {
             debugError('Supabase is undefined immediately!');
-            alert('Critical: Supabase SDK missing');
+            // alert('Critical: Supabase SDK missing');
         } else {
             debugLog('Supabase SDK found.');
         }
@@ -472,11 +472,11 @@
                 allRoomsData = rooms;
 
                 // 객실 렌더링
+                // 클릭 범위 확대를 위해 카드 전체(room-card-grid)에 onclick 이벤트 추가
                 roomList.innerHTML = rooms.map(room => `
-                    <div class="room-card-grid fade-in-up">
+                    <div class="room-card-grid fade-in-up" onclick="openRoomDetail('${room.id}')" style="cursor: pointer;">
                         <div class="room-thumb" 
-                             style="background-image: url('${room.image_url || 'images/default-room.jpg'}'); cursor: pointer;"
-                             onclick="openRoomDetail('${room.id}')">
+                             style="background-image: url('${room.image_url || 'images/default-room.jpg'}');">
                         </div>
                         <div class="room-details">
                             <h3>${room.name}</h3>
@@ -488,7 +488,7 @@
                             <div class="room-price">
                                 ￦${room.price.toLocaleString()} / 1박
                             </div>
-                            <button onclick="openRoomDetail('${room.id}')" class="btn-reserve" style="width:100%; margin-top:1rem;">상세보기 및 예약</button>
+                            <button class="btn-reserve" style="width:100%; margin-top:1rem;">상세보기 및 예약</button>
                         </div>
                     </div>
                 `).join('');
@@ -516,6 +516,7 @@
         // --- Modal Logic ---
 
         function openRoomDetail(roomId) {
+            debugLog('openRoomDetail called with ID: ' + roomId);
             // ID로 객실 데이터 찾기
             const room = allRoomsData.find(r => r.id == roomId); // loose equality for string/number match
 
