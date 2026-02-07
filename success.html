@@ -143,19 +143,20 @@
             // (실제로는 서버에서 결제 승인 API 호출 후 저장해야 함)
 
             try {
-                if (!supabase) throw new Error('Supabase Not Loaded');
+                // api/supabase.js의 createBooking 함수 사용
+                const bookingData = {
+                    user_id: userId,
+                    room_id: parseInt(roomId), // Ensure integer
+                    check_in: checkIn,
+                    check_out: checkOut,
+                    guests: parseInt(guests),
+                    total_price: parseInt(amount),
+                    status: 'confirmed',
+                    // payment_key: paymentKey, // Optional: Save payment key if DB has column
+                    // order_id: orderId
+                };
 
-                const { data, error } = await supabase.from('bookings').insert([
-                    {
-                        user_id: userId, // URL 파라미터가 없으면 에러 날 수 있음. 현재는 보안상 취약하지만 데모용.
-                        room_id: roomId,
-                        check_in: checkIn,
-                        check_out: checkOut,
-                        guests: guests,
-                        total_price: parseInt(amount),
-                        status: 'confirmed'
-                    }
-                ]);
+                const { data, error } = await createBooking(bookingData);
 
                 if (error) throw error;
 

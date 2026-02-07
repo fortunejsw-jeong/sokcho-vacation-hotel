@@ -80,3 +80,12 @@ async function cancelBooking(bookingId) {
         .eq('id', bookingId);
     return { data, error };
 }
+
+// 새 예약 생성하기 (결제 성공 후)
+async function createBooking(bookingData) {
+    const { data, error } = await supabase
+        .from('bookings')
+        .insert([bookingData])
+        .select(); // Return inserted data
+    return { data, error };
+}
