@@ -362,7 +362,10 @@
 
     <script src="app.js"></script>
     <script>
-        lucide.createIcons();
+        // Initialize Lucide icons safely on load
+        if (window.lucide) {
+            try { lucide.createIcons(); } catch (e) { console.warn(e); }
+        }
 
         // URL 파라미터 또는 기본값으로 날짜 설정
         const urlParams = new URLSearchParams(window.location.search);
@@ -392,6 +395,9 @@
             'default': []
         };
 
+        // 전역 객실 데이터 저장소
+        let allRoomsData = [];
+
         // 객실 목록 불러오기
         async function loadRooms() {
             const roomList = document.getElementById('room-list');
@@ -414,12 +420,15 @@
                     return;
                 }
 
+                // 전역 변수에 저장
+                allRoomsData = rooms;
+
                 // 객실 렌더링
                 roomList.innerHTML = rooms.map(room => `
                     <div class="room-card-grid fade-in-up">
                         <div class="room-thumb" 
                              style="background-image: url('${room.image_url || 'images/default-room.jpg'}'); cursor: pointer;"
-                             onclick='openRoomDetail(${JSON.stringify(room).replace(/'/g, "&#39;")})'>
+                             onclick="openRoomDetail('${room.id}')">
                         </div>
                         <div class="room-details">
                             <h3>${room.name}</h3>
@@ -431,10 +440,17 @@
                             <div class="room-price">
                                 ￦${room.price.toLocaleString()} / 1박
                             </div>
-                            <button onclick='openRoomDetail(${JSON.stringify(room).replace(/'/g, "&#39;")})' class="btn-reserve" style="width:100%; margin-top:1rem;">상세보기 및 예약</button>
+                            <button onclick="openRoomDetail('${room.id}')" class="btn-reserve" style="width:100%; margin-top:1rem;">상세보기 및 예약</button>
                         </div>
                     </div>
                 `).join('');
+
+                // 애니메이션이 적용되지 않을 경우를 대비해 강제로 표시 (CSS 이슈 방지)
+                setTimeout(() => {
+                    const cards = document.querySelectorAll('.room-card-grid');
+                    cards.forEach(card => card.style.opacity = '1');
+                }, 100);
+
             } catch (err) {
                 console.error(err);
                 roomList.innerHTML = `<div class="empty-state">
@@ -450,7 +466,15 @@
 
         // --- Modal Logic ---
 
-        function openRoomDetail(room) {
+        function openRoomDetail(roomId) {
+            // ID로 객실 데이터 찾기
+            const room = allRoomsData.find(r => r.id == roomId); // loose equality for string/number match
+
+            if (!room) {
+                console.error('Room not found:', roomId);
+                return;
+            }
+
             const modal = document.getElementById('room-modal');
             const mainImg = document.getElementById('modal-main-img');
             const subImagesDiv = document.getElementById('modal-sub-images');
@@ -501,7 +525,10 @@
             // Show Modal
             modal.classList.add('active');
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
-            lucide.createIcons();
+
+            if (window.lucide) {
+                try { lucide.createIcons(); } catch (e) { console.warn(e); }
+            }
         }
 
         function closeModal() {
@@ -581,8 +608,10 @@
             });
         }
 
-        // 초기 로드
-        loadRooms();
+        // 초기 로드: DOMContentLoaded 후 실행
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRooms();
+        });
     </script>
 </body>
 
