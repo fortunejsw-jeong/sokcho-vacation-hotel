@@ -36,6 +36,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="api/supabase.js"></script>
 
+    <!-- Kakao Map SDK -->
+    <script type="text/javascript"
+        src="//dapi.kakao.com/v2/maps/sdk.js?appkey=f60da71e81193198bd66e91c415f3948&libraries=services"></script>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -176,8 +180,8 @@
                             <div class="slide-caption">키즈 룸</div>
                         </div>
                         <div class="slide fade">
-                            <img src="images/hotel-restaurant.jpg" alt="호텔 레스토랑">
-                            <div class="slide-caption">호텔 레스토랑</div>
+                            <img src="images/hotel-restaurant.jpg" alt="호텔 로비2">
+                            <div class="slide-caption">호텔 로비2</div>
                         </div>
                         <div class="slide fade">
                             <img src="images/hotel-lobby.jpg" alt="호텔 로비">
@@ -449,11 +453,8 @@
                 </div>
                 <div class="location-content">
                     <div class="map-frame">
-                        <!-- Static Map Image or Iframe -->
-                        <iframe
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3161.4284562512613!2d128.5830!3d38.1915!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzjCsDExJzI5LjQiTiAxMjjCsDM1JzA5LjEiRQ!5e0!3m2!1sen!2skr!4v1630000000000!5m2!1sen!2skr"
-                            width="100%" height="100%" style="border:0; min-height: 400px;" allowfullscreen=""
-                            loading="lazy"></iframe>
+                        <!-- Kakao Map -->
+                        <div id="kakao-map" style="width:100%;height:100%;min-height:400px;"></div>
                     </div>
                     <div class="location-details">
                         <div class="detail-item">
@@ -557,6 +558,32 @@
     <script src="app.js"></script>
     <script>
         lucide.createIcons();
+
+        // Initialize Kakao Map
+        if (typeof kakao !== 'undefined' && kakao.maps) {
+            const mapContainer = document.getElementById('kakao-map');
+            if (mapContainer) {
+                const mapOption = {
+                    center: new kakao.maps.LatLng(38.191667, 128.585833), // 속초 베케이션 호텔 좌표
+                    level: 3 // 지도 확대 레벨
+                };
+
+                const map = new kakao.maps.Map(mapContainer, mapOption);
+
+                // 마커 생성
+                const markerPosition = new kakao.maps.LatLng(38.191667, 128.585833);
+                const marker = new kakao.maps.Marker({
+                    position: markerPosition
+                });
+                marker.setMap(map);
+
+                // 인포윈도우 생성
+                const infowindow = new kakao.maps.InfoWindow({
+                    content: '<div style="padding:10px;font-size:14px;font-weight:bold;">속초 베케이션 호텔</div>'
+                });
+                infowindow.open(map, marker);
+            }
+        }
     </script>
 </body>
 
