@@ -161,9 +161,8 @@ const roomsData = [
         tags: ['2인', 'Queen Bed'],
         thumbnail: 'images/room-double.jpg',
         images: [
-            'images/room-double-01.jpg', // User uploaded
-            'images/room-double.jpg', // Fallback/Original
-            // Add more placeholders or duplicates if needed
+            'images/room-double.jpg',
+            'images/room-double-bath.jpg'
         ]
     },
     {
@@ -175,7 +174,11 @@ const roomsData = [
         price: 100000,
         tags: ['3인', 'Queen + Single'],
         thumbnail: 'images/room-twin.jpg',
-        images: ['images/room-twin.jpg']
+        images: [
+            'images/room-twin.jpg',
+            'images/room-double-bath.jpg',
+            'images/room-twin-view.jpg'
+        ]
     },
     {
         id: 3,
@@ -186,29 +189,43 @@ const roomsData = [
         price: 150000,
         tags: ['4인', '2 Queen Beds', 'Dining Table'],
         thumbnail: 'images/room-dining.jpg',
-        images: ['images/room-dining.jpg']
+        images: [
+            'images/room-dining.jpg',
+            'images/room-dining-bath.jpg',
+            'images/room-dining-dishware.jpg'
+        ]
     },
     {
         id: 4,
         name: '무비 다이닝',
         description: '맛있는 식사와 영화 감상을 동시에 즐길 수 있는 특별한 테마 객실입니다.',
-        baseOccupancy: 2, // Assume base 2? Description doesn't specify but tags say dining+cinema
-        maxOccupancy: 4, // Guessing based on similar rooms
+        baseOccupancy: 2,
+        maxOccupancy: 4,
         price: 160000,
         tags: ['다이닝+시네마', '대형스크린', '취사가능'],
         thumbnail: 'images/room-movie-dining.jpg',
-        images: ['images/room-movie-dining.jpg']
+        images: [
+            'images/room-movie-dining.jpg',
+            'images/room-movie-dining-view.jpg',
+            'images/room-movie-dining-bed.jpg',
+            'images/room-movie-dining-kitchen.jpg'
+        ]
     },
     {
         id: 5,
         name: '무비',
         description: '프리미엄 사운드와 편안한 환경에서 영화와 드라마를 완벽하게 즐기는 시네마 전용 객실입니다.',
         baseOccupancy: 2,
-        maxOccupancy: 2, // Guessing
+        maxOccupancy: 2,
         price: 180000,
         tags: ['시네마', '사운드바', '취사가능'],
         thumbnail: 'images/room-movie.jpg',
-        images: ['images/room-movie.jpg']
+        images: [
+            'images/room-movie.jpg',
+            'images/room-movie-view.jpg',
+            'images/room-movie-dining-bed.jpg',
+            'images/room-movie-dining-kitchen.jpg'
+        ]
     },
     {
         id: 6,
@@ -219,7 +236,12 @@ const roomsData = [
         price: 180000,
         tags: ['엔터테인먼트', '친구/커플', '취사가능'],
         thumbnail: 'images/room-play.jpg',
-        images: ['images/room-play.jpg']
+        images: [
+            'images/room-play.jpg',
+            'images/room-play-view.jpg',
+            'images/room-movie-dining-bed.jpg',
+            'images/room-movie-dining-kitchen.jpg'
+        ]
     },
     {
         id: 7,
@@ -230,7 +252,11 @@ const roomsData = [
         price: 200000,
         tags: ['가족여행', '아동친화', '취사가능'],
         thumbnail: 'images/room-kids.jpg',
-        images: ['images/room-kids.jpg']
+        images: [
+            'images/room-kids-bed.jpg',
+            'images/room-kids-view.jpg',
+            'images/room-kids-bath.jpg'
+        ]
     },
     {
         id: 8,
@@ -241,7 +267,12 @@ const roomsData = [
         price: 200000,
         tags: ['출장/업무', 'Workstation', '취사가능'],
         thumbnail: 'images/room-business.jpg',
-        images: ['images/room-business.jpg']
+        images: [
+            'images/room-business.jpg',
+            'images/room-business-view.jpg',
+            'images/room-business-relax.jpg',
+            'images/room-business-kitchen.jpg'
+        ]
     },
     {
         id: 9,
@@ -252,7 +283,12 @@ const roomsData = [
         price: 220000,
         tags: ['힐링', '프리미엄', '취사가능'],
         thumbnail: 'images/room-wellness.jpg',
-        images: ['images/room-wellness.jpg']
+        images: [
+            'images/room-wellness.jpg',
+            'images/room-wellness-view.jpg',
+            'images/room-wellness-bed.jpg',
+            'images/room-wellness-kitchen.jpg'
+        ]
     }
 ];
 
@@ -300,7 +336,6 @@ function openRoomModal(index) {
     // Find or create modal
     let modal = document.getElementById('room-modal');
     if (!modal) {
-        // Create modal structure if not exists (fail-safe)
         console.error('Modal element not found');
         return;
     }
@@ -308,8 +343,30 @@ function openRoomModal(index) {
     // Update Content
     document.getElementById('modal-room-name').innerText = room.name;
     document.getElementById('modal-room-desc').innerText = room.description;
+    document.getElementById('modal-room-price').innerText = `${room.price.toLocaleString()}원 / 1박`;
 
-    updateModalImage();
+    // Update tags
+    const tagsContainer = document.getElementById('modal-room-tags');
+    tagsContainer.innerHTML = room.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+
+    // Update main image
+    const mainImg = document.getElementById('modal-main-image');
+    mainImg.src = room.images[0];
+
+    // Update sub images (thumbnails)
+    const subImagesContainer = document.getElementById('modal-sub-images');
+    subImagesContainer.innerHTML = room.images.map((img, idx) => `
+        <img src="${img}" alt="${room.name}" 
+             onclick="changeModalImage(${idx})" 
+             class="${idx === 0 ? 'active' : ''}"
+             style="cursor: pointer;">
+    `).join('');
+
+    // Update book button to navigate to booking page
+    const bookBtn = document.getElementById('modal-book-btn');
+    bookBtn.onclick = () => {
+        window.location.href = 'booking.html';
+    };
 
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden'; // Prevent scrolling background
@@ -321,24 +378,23 @@ function closeRoomModal() {
     document.body.style.overflow = 'auto';
 }
 
-function updateModalImage() {
+function changeModalImage(imageIndex) {
+    currentImageIndex = imageIndex;
     const room = roomsData[currentRoomIndex];
-    const imgElement = document.getElementById('modal-main-image');
-    if (imgElement) imgElement.src = room.images[currentImageIndex];
 
-    // Update dots/indicators if we add them
-}
+    // Update main image
+    const mainImg = document.getElementById('modal-main-image');
+    mainImg.src = room.images[imageIndex];
 
-function nextImage() {
-    const room = roomsData[currentRoomIndex];
-    currentImageIndex = (currentImageIndex + 1) % room.images.length;
-    updateModalImage();
-}
-
-function prevImage() {
-    const room = roomsData[currentRoomIndex];
-    currentImageIndex = (currentImageIndex - 1 + room.images.length) % room.images.length;
-    updateModalImage();
+    // Update active state on thumbnails
+    const thumbnails = document.querySelectorAll('#modal-sub-images img');
+    thumbnails.forEach((thumb, idx) => {
+        if (idx === imageIndex) {
+            thumb.classList.add('active');
+        } else {
+            thumb.classList.remove('active');
+        }
+    });
 }
 
 // Initial Render
