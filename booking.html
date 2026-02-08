@@ -791,8 +791,8 @@
                 bookRoom(room.id, room.name, finalPrice);
             };
 
-            // Show Modal
-            modal.style.display = 'flex';
+            // Show Modal - ADD .active CLASS TO MAKE IT VISIBLE!
+            modal.classList.add('active');
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
 
             if (window.lucide) {
@@ -802,7 +802,7 @@
 
         function closeRoomDetail() {
             const modal = document.getElementById('room-modal');
-            modal.style.display = 'none';
+            modal.classList.remove('active');
             document.body.style.overflow = '';
         }
 
@@ -925,7 +925,7 @@
         // 페이지 로드 시 모달 강제 닫기 - 클릭 차단 문제 해결
         const modal = document.getElementById('room-modal');
         if (modal) {
-            modal.style.display = 'none';
+            modal.classList.remove('active');  // Remove .active class instead of setting display
             document.body.style.overflow = '';
             console.log('=== MODAL INITIALIZED (closed) ===');
         }
