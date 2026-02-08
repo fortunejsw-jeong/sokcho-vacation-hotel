@@ -858,7 +858,7 @@
 
         // Close on outside click
         document.getElementById('room-modal').addEventListener('click', function (e) {
-            if (e.target === this) closeModal();
+            if (e.target === this) closeRoomDetail();
         });
 
         // --- Payment Logic (Existing) ---
@@ -921,6 +921,14 @@
         console.log('=== SCRIPT LOADED ===');
         console.log('Supabase available:', typeof supabase !== 'undefined');
         console.log('loadRooms function defined:', typeof loadRooms === 'function');
+
+        // 페이지 로드 시 모달 강제 닫기 - 클릭 차단 문제 해결
+        const modal = document.getElementById('room-modal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+            console.log('=== MODAL INITIALIZED (closed) ===');
+        }
 
         // 즉시 실행 - DOM이 준비될 때까지 짧은 지연
         setTimeout(async () => {
