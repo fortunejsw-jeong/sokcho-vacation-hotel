@@ -290,12 +290,15 @@
         }
 
         .btn-reserve {
+            display: block;
+            width: 100%;
             background: var(--primary);
             color: white;
             border: none;
             padding: 1rem 2rem;
             border-radius: 8px;
             font-size: 1.1rem;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
         }
@@ -829,8 +832,8 @@
                 return;
             }
 
-            // Navigate to payment page with query parameters
-            window.location.href = `payment.html?roomId=${roomId}&checkin=${checkin}&checkout=${checkout}&guests=${guests}`;
+            // Navigate to success page with query parameters (payment.html doesn't exist yet)
+            window.location.href = `success.html?roomId=${roomId}&checkin=${checkin}&checkout=${checkout}&guests=${guests}`;
         }
 
         function changeMainImage(src) {
