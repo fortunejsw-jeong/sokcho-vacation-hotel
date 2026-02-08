@@ -108,6 +108,9 @@ document.addEventListener('DOMContentLoaded', () => {
     selectInputs.forEach(select => {
         select.style.cursor = 'pointer';
     });
+
+    // Initialize Slideshow
+    initSlideshow();
 });
 
 // Auth Status Check & UI Update
@@ -435,3 +438,72 @@ async function checkLoginStatusForBooking() {
         }
     }
 }
+
+// Slideshow Functions
+let slideIndex = 0;
+let slideTimer;
+
+function initSlideshow() {
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+
+    if (slides.length === 0) return; // No slideshow on this page
+
+    showSlide(slideIndex);
+
+    // Auto-play every 3 seconds
+    slideTimer = setInterval(() => {
+        slideIndex++;
+        showSlide(slideIndex);
+    }, 3000);
+}
+
+function showSlide(n) {
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+
+    if (slides.length === 0) return;
+
+    // Wrap around
+    if (n >= slides.length) { slideIndex = 0; }
+    if (n < 0) { slideIndex = slides.length - 1; }
+
+    // Hide all slides
+    slides.forEach(slide => slide.classList.remove('active'));
+
+    // Remove active class from all dots
+    dots.forEach(dot => dot.classList.remove('active'));
+
+    // Show current slide
+    slides[slideIndex].classList.add('active');
+
+    // Highlight current dot
+    if (dots[slideIndex]) {
+        dots[slideIndex].classList.add('active');
+    }
+}
+
+function changeSlide(n) {
+    clearInterval(slideTimer); // Stop auto-play when user manually navigates
+    slideIndex += n;
+    showSlide(slideIndex);
+
+    // Restart auto-play after 5 seconds
+    slideTimer = setInterval(() => {
+        slideIndex++;
+        showSlide(slideIndex);
+    }, 3000);
+}
+
+function currentSlide(n) {
+    clearInterval(slideTimer); // Stop auto-play when user clicks a dot
+    slideIndex = n - 1; // Dots are 1-indexed
+    showSlide(slideIndex);
+
+    // Restart auto-play after 5 seconds
+    slideTimer = setInterval(() => {
+        slideIndex++;
+        showSlide(slideIndex);
+    }, 3000);
+}
+

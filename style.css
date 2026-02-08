@@ -370,6 +370,130 @@ header.scrolled .mobile-menu-btn {
     opacity: 0.9;
 }
 
+/* Slideshow Container */
+.slideshow-container {
+    position: relative;
+    max-width: 1000px;
+    margin: 0 auto;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.slideshow-wrapper {
+    position: relative;
+    width: 100%;
+    height: 600px;
+}
+
+.slide {
+    display: none;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.slide.active {
+    display: block;
+    animation: fadeIn 1s ease-in-out;
+}
+
+.slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.slide-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    color: var(--white);
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Navigation Buttons */
+.prev,
+.next {
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: auto;
+    padding: 16px 20px;
+    color: white;
+    font-weight: bold;
+    font-size: 24px;
+    transition: 0.3s ease;
+    border-radius: 0 4px 4px 0;
+    user-select: none;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 10;
+}
+
+.next {
+    right: 0;
+    border-radius: 4px 0 0 4px;
+}
+
+.prev:hover,
+.next:hover {
+    background-color: rgba(0, 91, 150, 0.8);
+}
+
+/* Dots Container */
+.dots-container {
+    text-align: center;
+    padding: 20px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+}
+
+.dot {
+    cursor: pointer;
+    height: 12px;
+    width: 12px;
+    margin: 0 5px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    display: inline-block;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.dot.active,
+.dot:hover {
+    background-color: var(--secondary-color);
+    transform: scale(1.2);
+}
+
+/* Fade Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0.4;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.fade {
+    animation-name: fadeIn;
+    animation-duration: 1s;
+}
+
+
 /* Rooms Section */
 .room-card {
     display: flex;
