@@ -149,7 +149,7 @@
             <div class="container">
                 <div class="section-header text-center">
                     <span class="overline">GALLERY</span>
-                    <h2>호텔 구경하기</h2>
+                    <h2>HOTEL INSIDE</h2>
                     <p class="subtitle">속초 베케이션 호텔의 다양한 시설과 객실을 둘러보세요</p>
                 </div>
                 <div class="slideshow-container">
@@ -557,18 +557,39 @@
 
     <script src="app.js"></script>
     <script>
+        // Lucide Icons 초기화
         lucide.createIcons();
+    </script>
 
-        // Initialize Kakao Map
-        if (typeof kakao !== 'undefined' && kakao.maps) {
+    <!-- Kakao Map 초기화 (별도 스크립트) -->
+    <script>
+        window.addEventListener('load', function () {
+            console.log('Initializing Kakao Map...');
+
+            if (typeof kakao === 'undefined') {
+                console.error('Kakao SDK not loaded!');
+                return;
+            }
+
+            if (!kakao.maps) {
+                console.error('Kakao Maps API not available!');
+                return;
+            }
+
             const mapContainer = document.getElementById('kakao-map');
-            if (mapContainer) {
+            if (!mapContainer) {
+                console.error('Map container not found!');
+                return;
+            }
+
+            try {
                 const mapOption = {
                     center: new kakao.maps.LatLng(38.191667, 128.585833), // 속초 베케이션 호텔 좌표
                     level: 3 // 지도 확대 레벨
                 };
 
                 const map = new kakao.maps.Map(mapContainer, mapOption);
+                console.log('Map created successfully!');
 
                 // 마커 생성
                 const markerPosition = new kakao.maps.LatLng(38.191667, 128.585833);
@@ -576,14 +597,18 @@
                     position: markerPosition
                 });
                 marker.setMap(map);
+                console.log('Marker added!');
 
                 // 인포윈도우 생성
                 const infowindow = new kakao.maps.InfoWindow({
                     content: '<div style="padding:10px;font-size:14px;font-weight:bold;">속초 베케이션 호텔</div>'
                 });
                 infowindow.open(map, marker);
+                console.log('Infowindow opened!');
+            } catch (error) {
+                console.error('Error initializing map:', error);
             }
-        }
+        });
     </script>
 </body>
 
