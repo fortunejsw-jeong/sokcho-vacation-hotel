@@ -534,6 +534,10 @@
                     <p id="modal-desc" class="modal-description">Description goes here...</p>
                     <div class="modal-price-area">
                         <span class="price" id="modal-price">￦0 / 1박</span>
+                        <span class="price" id="modal-total-price"
+                            style="display:none; font-size: 1.2rem; color: #d32f2f; margin-top: 0.5rem;">
+                            총 <span id="nights-count">0</span>박 <span id="total-amount">₩0</span>
+                        </span>
                         <button id="modal-book-btn" class="btn-reserve" style="width:100%">예약하기</button>
                     </div>
                     <div class="modal-amenities">
@@ -771,7 +775,21 @@
             // Book Button Logic
             const bookBtn = document.getElementById('modal-book-btn');
             // Remove old event listeners by cloning or just setting onclick
-            bookBtn.onclick = () => bookRoom(room.id, room.name, room.price);
+            // Calculate total price based on selected dates
+            bookBtn.onclick = () => {
+                const checkin = document.getElementById('checkin').value;
+                const checkout = document.getElementById('checkout').value;
+                let finalPrice = room.price;
+
+                if (checkin && checkout) {
+                    const nights = Math.ceil((new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
+                    if (nights > 0) {
+                        finalPrice = nights * room.price;
+                    }
+                }
+
+                bookRoom(room.id, room.name, finalPrice);
+            };
 
             // Show Modal
             modal.style.display = 'flex';
@@ -786,6 +804,11 @@
             const modal = document.getElementById('room-modal');
             modal.style.display = 'none';
             document.body.style.overflow = '';
+        }
+
+        // Alias for closeRoomDetail to match the onclick handler
+        function closeModal() {
+            closeRoomDetail();
         }
 
         function proceedToPayment() {
