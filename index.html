@@ -36,10 +36,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="api/supabase.js"></script>
 
-    <!-- Kakao Map SDK -->
-    <script type="text/javascript"
-        src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=f60da71e81193198bd66e91c415f3948&libraries=services"></script>
-
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -453,8 +449,12 @@
                 </div>
                 <div class="location-content">
                     <div class="map-frame">
-                        <!-- Kakao Map -->
-                        <div id="kakao-map" style="width:100%;height:100%;min-height:400px;"></div>
+                        <!-- Naver Map -->
+                        <iframe
+                            src="https://map.naver.com/p/entry/place/1380297624?c=15.00,0,0,0,dh&placePath=%2Fhome%3Fentry=plt"
+                            width="100%" height="100%" style="border:0; min-height: 400px;" allowfullscreen=""
+                            loading="lazy">
+                        </iframe>
                     </div>
                     <div class="location-details">
                         <div class="detail-item">
@@ -559,56 +559,6 @@
     <script>
         // Lucide Icons 초기화
         lucide.createIcons();
-    </script>
-
-    <!-- Kakao Map 초기화 (별도 스크립트) -->
-    <script>
-        window.addEventListener('load', function () {
-            console.log('Initializing Kakao Map...');
-
-            if (typeof kakao === 'undefined') {
-                console.error('Kakao SDK not loaded!');
-                return;
-            }
-
-            if (!kakao.maps) {
-                console.error('Kakao Maps API not available!');
-                return;
-            }
-
-            const mapContainer = document.getElementById('kakao-map');
-            if (!mapContainer) {
-                console.error('Map container not found!');
-                return;
-            }
-
-            try {
-                const mapOption = {
-                    center: new kakao.maps.LatLng(38.191667, 128.585833), // 속초 베케이션 호텔 좌표
-                    level: 3 // 지도 확대 레벨
-                };
-
-                const map = new kakao.maps.Map(mapContainer, mapOption);
-                console.log('Map created successfully!');
-
-                // 마커 생성
-                const markerPosition = new kakao.maps.LatLng(38.191667, 128.585833);
-                const marker = new kakao.maps.Marker({
-                    position: markerPosition
-                });
-                marker.setMap(map);
-                console.log('Marker added!');
-
-                // 인포윈도우 생성
-                const infowindow = new kakao.maps.InfoWindow({
-                    content: '<div style="padding:10px;font-size:14px;font-weight:bold;">속초 베케이션 호텔</div>'
-                });
-                infowindow.open(map, marker);
-                console.log('Infowindow opened!');
-            } catch (error) {
-                console.error('Error initializing map:', error);
-            }
-        });
     </script>
 </body>
 
