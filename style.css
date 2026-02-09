@@ -1150,9 +1150,21 @@ footer {
 
     .hero-content h1 {
         font-size: 1.8rem;
-        padding-top: 250px;
+        padding-top: 350px;
         /* Increase padding massively to avoid header overlap */
         margin-bottom: 1rem;
+        word-break: keep-all;
+    }
+
+    .hero-desc p {
+        margin-bottom: 0.5rem;
+        line-height: 1.6;
+    }
+
+    .mobile-break {
+        display: block;
+        height: 1rem;
+        content: "";
     }
 
     /* Header Optimization */
