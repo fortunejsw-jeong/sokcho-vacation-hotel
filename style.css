@@ -1121,8 +1121,9 @@ footer {
 
     .hero-content h1 {
         font-size: 1.8rem;
-        padding-top: 80px;
-        /* Prevent header overlap */
+        padding-top: 120px;
+        /* Increase padding to avoid header overlap */
+        margin-bottom: 1rem;
     }
 
     /* Header Optimization */
@@ -1189,6 +1190,28 @@ footer {
 
     .btn-search {
         margin-top: 0.5rem;
+    }
+
+    /* Contact Info Fix */
+    .booking-contact {
+        flex-direction: row;
+        flex-wrap: wrap;
+        /* Allow wrapping if needed but try to keep inline */
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .contact-btn {
+        padding: 0.6rem 1rem;
+        /* Smaller padding */
+        font-size: 0.85rem;
+        white-space: nowrap;
+        /* Prevent text breaking */
+        flex: 1;
+        /* Distribute space evenly */
+        min-width: 140px;
+        /* Min width to prevent squishing */
+        justify-content: center;
     }
 
     /* Gallery responsive */
@@ -1509,5 +1532,26 @@ footer {
         right: 10px;
         z-index: 20;
         background: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Map & Location Fix */
+    .location-content {
+        grid-template-columns: 1fr;
+        /* Stack vertically */
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .map-frame {
+        width: 100%;
+        height: 300px;
+        /* Fixed height for mobile map */
+        order: -1;
+        /* Ensure map is on top */
+    }
+
+    .location-details {
+        width: 100%;
     }
 }

@@ -457,12 +457,16 @@
                 </div>
                 <div class="location-content">
                     <div class="map-frame">
-                        <!-- Naver Map -->
-                        <iframe
-                            src="https://map.naver.com/p/search/%EA%B0%95%EC%9B%90%EB%8F%84%20%EC%86%8D%EC%B4%88%EC%8B%9C%20%EB%8F%99%ED%95%B4%EB%8C%80%EB%A1%9C%204080/place/1380297624?c=15.00,0,0,0,dh&isCorrectAnswer=true"
-                            width="100%" height="100%" style="border:0; min-height: 400px;" allowfullscreen=""
-                            loading="lazy">
-                        </iframe>
+                        <!-- Naver Map Image Link (Mobile Friendly) -->
+                        <a href="https://map.naver.com/p/entry/place/1380297624?c=15.00,0,0,0,dh" target="_blank"
+                            style="display: block; width: 100%; height: 100%; position: relative; background: #eee; text-decoration: none;">
+                            <img src="https://via.placeholder.com/800x400.png?text=View+Map" alt="지도 보기"
+                                style="width: 100%; height: 100%; object-fit: cover; opacity: 0.5;">
+                            <div
+                                style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 10px 20px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); color: #333; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="map"></i> 네이버 지도 보기
+                            </div>
+                        </a>
                     </div>
                     <div class="location-details">
                         <div class="detail-item">
