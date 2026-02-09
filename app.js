@@ -237,7 +237,7 @@ const roomsData = [
         baseOccupancy: 2,
         maxOccupancy: 4,
         price: 180000,
-        tags: ['엔터테인먼트', '친구/커플', '취사가능'],
+        tags: ['기준 2인', '최대 4인(유료)', '엔터테인먼트', '친구/커플', '취사가능'],
         thumbnail: 'images/room-play.jpg',
         images: [
             'images/room-play.jpg',
