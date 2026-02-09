@@ -1150,8 +1150,8 @@ footer {
 
     .hero-content h1 {
         font-size: 1.8rem;
-        padding-top: 180px;
-        /* Increase padding significantly to avoid header overlap */
+        padding-top: 250px;
+        /* Increase padding massively to avoid header overlap */
         margin-bottom: 1rem;
     }
 
@@ -1223,24 +1223,34 @@ footer {
 
     /* Contact Info Fix */
     .booking-contact {
-        flex-direction: row;
-        flex-wrap: wrap;
-        /* Allow wrapping if needed but try to keep inline */
-        justify-content: center;
-        gap: 0.5rem;
+        flex-direction: column;
+        /* Stack buttons vertically */
+        align-items: stretch;
+        /* Full width */
+        gap: 0.8rem;
+        margin-top: 1rem;
     }
 
     .contact-btn {
-        padding: 0.6rem 1rem;
-        /* Smaller padding */
-        font-size: 0.85rem;
+        padding: 1rem;
+        font-size: 1rem;
         white-space: nowrap;
-        /* Prevent text breaking */
-        flex: 1;
-        /* Distribute space evenly */
-        min-width: 140px;
-        /* Min width to prevent squishing */
         justify-content: center;
+        width: 100%;
+        border-radius: 50px;
+    }
+
+    /* Force specific styles for phone button on mobile */
+    .phone-btn,
+    .phone-btn:link,
+    .phone-btn:visited {
+        background: var(--primary-color) !important;
+        color: var(--white) !important;
+        border: none !important;
+        text-decoration: none !important;
+        display: flex !important;
+        align-items: center;
+        opacity: 1 !important;
     }
 
     /* Gallery responsive */
