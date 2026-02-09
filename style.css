@@ -1106,6 +1106,13 @@ footer {
         z-index: 999;
     }
 
+    /* Fix Hero Overlap on Mobile */
+    .hero {
+        height: auto !important;
+        min-height: 100vh;
+        padding-bottom: 6rem;
+    }
+
     .nav-links.active {
         right: 0;
     }
@@ -1152,7 +1159,7 @@ footer {
 
     .hero-content h1 {
         font-size: 1.8rem;
-        padding-top: 840px;
+        padding-top: 540px;
         /* Increase padding massively to avoid header overlap */
         margin-bottom: 1rem;
         word-break: keep-all;
