@@ -1159,7 +1159,7 @@ footer {
 
     .hero-content h1 {
         font-size: 1.8rem;
-        padding-top: 540px;
+        padding-top: 180px;
         /* Increase padding massively to avoid header overlap */
         margin-bottom: 1rem;
         word-break: keep-all;
