@@ -240,6 +240,8 @@ header.scrolled .mobile-menu-btn {
     margin-bottom: 1.5rem;
     line-height: 1.2;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    padding-top: 220px;
+    /* Added padding for desktop overlap fix */
 }
 
 .hero-content p {
