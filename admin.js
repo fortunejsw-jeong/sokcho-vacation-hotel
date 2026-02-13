@@ -196,6 +196,19 @@ async function uploadRoomFile(file) {
     return publicUrl;
 }
 
+// Default Images (Synced with booking.html)
+const roomExtraImages = {
+    '스탠다드 더블': ['images/room-double.jpg', 'images/room-double-bath.jpg'],
+    '스탠다드 트윈': ['images/room-twin.jpg', 'images/room-double-bath.jpg', 'images/room-twin-view.jpg'],
+    '다이닝 룸': ['images/room-dining.jpg', 'images/room-dining-bath.jpg', 'images/room-dining-dishware.jpg'],
+    '무비 다이닝': ['images/room-movie-dining.jpg', 'images/room-movie-dining-view.jpg', 'images/room-movie-dining-bed.jpg', 'images/room-movie-dining-kitchen.jpg'],
+    '무비': ['images/room-movie.jpg', 'images/room-movie-view.jpg', 'images/room-movie-dining-bed.jpg', 'images/room-movie-dining-kitchen.jpg'],
+    '플레이': ['images/room-play.jpg', 'images/room-play-view.jpg', 'images/room-movie-dining-bed.jpg', 'images/room-movie-dining-kitchen.jpg'],
+    '키즈': ['images/room-kids-bed.jpg', 'images/room-kids-view.jpg', 'images/room-kids-bath.jpg'],
+    '비즈니스': ['images/room-business.jpg', 'images/room-business-view.jpg', 'images/room-business-relax.jpg', 'images/room-business-kitchen.jpg'],
+    '웰니스': ['images/room-wellness.jpg', 'images/room-wellness-view.jpg', 'images/room-wellness-bed.jpg', 'images/room-wellness-kitchen.jpg']
+};
+
 // Reset selected files when opening modal
 function openImageModal(roomId) {
     const room = adminRoomsData.find(r => r.id == roomId);
@@ -205,7 +218,14 @@ function openImageModal(roomId) {
     selectedRoomFiles = []; // Reset
     document.getElementById('room-preview-area').innerHTML = ''; // Reset
 
-    const images = room.images || [];
+    // Priority: DB images > Default Hardcoded images
+    let images = room.images;
+
+    // If DB is empty, load defaults (so they can be edited/saved)
+    if (!images || images.length === 0) {
+        images = roomExtraImages[room.name] || [];
+    }
+
     const urls = Array.isArray(images) ? images : [];
 
     document.getElementById('img-urls').value = urls.join('\n');
