@@ -295,27 +295,109 @@ async function loadBannerSettings() {
 
 async function saveBannerSettings(e) {
     e.preventDefault();
-    const isActive = document.getElementById('banner-active').checked;
-    const imgUrl = document.getElementById('banner-url').value;
+    const saveBtn = document.getElementById('save-btn');
+    const originalText = saveBtn.innerText;
+    saveBtn.innerText = '저장 중...';
+    saveBtn.disabled = true;
 
     try {
-        // Upsert 1
+        const isActive = document.getElementById('banner-active').checked;
+        let imgUrl = document.getElementById('banner-url').value;
+        const fileInput = document.getElementById('banner-file');
+
+        // 1. Upload File if selected
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            imgUrl = await uploadBannerImage(file);
+        }
+
+        // 2. Save Config to DB
         const { error: err1 } = await supabase.from('site_config').upsert({
             key: 'event_banner_show',
             value: isActive.toString()
         });
 
-        // Upsert 2
         const { error: err2 } = await supabase.from('site_config').upsert({
             key: 'event_banner_img',
             value: imgUrl
         });
 
-        if (err1 || err2) throw new Error('DB Update Failed');
+        if (err1 || err2) throw new Error('DB 저장 실패');
 
         alert('설정이 저장되었습니다.');
+
     } catch (err) {
-        alert('저장 실패: ' + err.message + '\n(SQL 스크립트를 실행했는지 확인해주세요)');
+        alert('실패: ' + err.message + '\n(스토리지 설정 SQL을 실행했는지 확인해주세요)');
+    } finally {
+        saveBtn.innerText = originalText;
+        saveBtn.disabled = false;
+        loadBannerSettings(); // Refresh
+    }
+}
+
+// --- File Upload Logic ---
+async function uploadBannerImage(file) {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `banner_${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    // Upload to 'banners' bucket
+    const { data, error } = await supabase.storage
+        .from('banners')
+        .upload(filePath, file);
+
+    if (error) {
+        throw new Error('이미지 업로드 실패: ' + error.message);
+    }
+
+    // Get Public URL
+    const { data: { publicUrl } } = supabase.storage
+        .from('banners')
+        .getPublicUrl(filePath);
+
+    return publicUrl;
+}
+
+// Drag & Drop Handlers
+const dropZone = document.getElementById('drop-zone');
+if (dropZone) {
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    dropZone.addEventListener('dragover', () => dropZone.style.background = '#e8f0fe');
+    dropZone.addEventListener('dragleave', () => dropZone.style.background = '#fafafa');
+
+    dropZone.addEventListener('drop', (e) => {
+        dropZone.style.background = '#fafafa';
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            document.getElementById('banner-file').files = files;
+            handleFileSelect({ target: { files: files } });
+        }
+    });
+}
+
+function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) {
+        // Show Preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const preview = document.getElementById('banner-preview');
+            const previewArea = document.getElementById('preview-area');
+            const fileName = document.getElementById('file-name');
+
+            preview.src = e.target.result;
+            previewArea.style.display = 'block';
+            fileName.innerText = file.name;
+        };
+        reader.readAsDataURL(file);
     }
 }
 
