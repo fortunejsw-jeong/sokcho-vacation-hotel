@@ -201,38 +201,60 @@ async function loadBookings() {
     tableBody.innerHTML = '<tr><td colspan="6">로딩 중...</td></tr>';
 
     try {
-        // Mock data or real fetch if table exists
-        const { data, error } = await supabase.from('bookings').select('*, profiles(full_name), rooms(name)').order('created_at', { ascending: false });
+        // Fetch bookings and profiles separately to avoid Foreign Key issues
+        const { data: bookings, error: bookingError } = await supabase
+            .from('bookings')
+            .select('*, rooms(name)')
+            .order('created_at', { ascending: false });
 
-        if (error) {
-            if (error.code === '42P01') {
+        if (bookingError) {
+            if (bookingError.code === '42P01') {
                 tableBody.innerHTML = '<tr><td colspan="6" style="color:red">SQL 스크립트를 실행해주세요 (bookings 테이블 없음)</td></tr>';
                 return;
             }
-            throw error;
+            throw bookingError;
         }
 
-        if (!data || data.length === 0) {
+        if (!bookings || bookings.length === 0) {
             tableBody.innerHTML = '<tr><td colspan="6">예약 내역이 없습니다.</td></tr>';
             return;
         }
 
-        tableBody.innerHTML = data.map(booking => `
+        // Fetch profiles to map names
+        const userIds = bookings.map(b => b.user_id);
+        const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, full_name')
+            .in('id', userIds);
+
+        // Create a map for quick lookup
+        const profileMap = {};
+        if (profiles) {
+            profiles.forEach(p => profileMap[p.id] = p.full_name);
+        }
+
+        tableBody.innerHTML = bookings.map(booking => {
+            const guestName = profileMap[booking.user_id] || '알 수 없음';
+            const roomName = booking.rooms?.name || '객실 정보 없음';
+
+            return `
             <tr>
                 <td>${booking.id}</td>
-                <td>${booking.profiles?.full_name || '알 수 없음'}</td>
-                <td>${booking.rooms?.name || '객실'}</td>
+                <td>${guestName}</td>
+                <td>${roomName}</td>
                 <td>${booking.check_in} ~ ${booking.check_out}</td>
                 <td><span class="badge ${booking.status}">${booking.status}</span></td>
                 <td>
                     ${booking.status !== 'cancelled' ?
-                `<button class="btn" style="background:#e74c3c; color:white; font-size:0.8rem; padding:4px 8px;" onclick="cancelBooking('${booking.id}')">취소</button>`
-                : '-'}
+                    `<button class="btn" style="background:#e74c3c; color:white; font-size:0.8rem; padding:4px 8px;" onclick="cancelBooking('${booking.id}')">취소</button>`
+                    : '-'}
                 </td>
             </tr>
-        `).join('');
+            `;
+        }).join('');
 
     } catch (err) {
+        console.error(err);
         tableBody.innerHTML = `<tr><td colspan="6">데이터 로딩 실패: ${err.message}</td></tr>`;
     }
 }

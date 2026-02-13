@@ -366,15 +366,34 @@ async function checkEventBanner() {
         const bannerImg = data.find(c => c.key === 'event_banner_img')?.value;
 
         if (showBanner && bannerImg) {
-            const banner = document.getElementById('event-banner');
-            const img = document.getElementById('event-banner-img');
-            if (banner && img) {
+            // Check if user hid it for today
+            const today = new Date().toISOString().split('T')[0];
+            const hiddenDate = localStorage.getItem('event_popup_closed_date');
+
+            if (hiddenDate === today) return;
+
+            const popup = document.getElementById('event-popup');
+            const img = document.getElementById('event-popup-img');
+
+            if (popup && img) {
                 img.src = bannerImg;
-                banner.style.display = 'block';
+                popup.style.display = 'flex'; // Use flex for centering (modal-overlay class)
             }
         }
     } catch (err) {
         console.log('Banner check failed:', err);
+    }
+}
+
+function closeEventPopup() {
+    const popup = document.getElementById('event-popup');
+    if (popup) popup.style.display = 'none';
+
+    // Check "Don't show today"
+    const checkbox = document.getElementById('dont-show-today');
+    if (checkbox && checkbox.checked) {
+        const today = new Date().toISOString().split('T')[0];
+        localStorage.setItem('event_popup_closed_date', today);
     }
 }
 async function handleLogout(e) {

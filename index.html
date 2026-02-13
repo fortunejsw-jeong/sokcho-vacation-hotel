@@ -40,10 +40,24 @@
 </head>
 
 <body>
-    <!-- Event Banner (Hidden by default, controlled by Site Config) -->
-    <div id="event-banner" style="display:none; text-align: center;">
-        <img id="event-banner-img" src="" alt="Event Banner"
-            style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+    <!-- Event Popup Modal -->
+    <div id="event-popup" class="modal-overlay" style="display: none; z-index: 99999;">
+        <div class="modal-content" style="max-width: 400px; text-align: center; padding: 0;">
+            <div style="position: relative;">
+                <img id="event-popup-img" src="" alt="Event"
+                    style="width: 100%; display: block; border-radius: 8px 8px 0 0;">
+                <button onclick="closeEventPopup()"
+                    style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">&times;</button>
+            </div>
+            <div
+                style="padding: 10px; background: white; border-radius: 0 0 8px 8px; display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-size: 0.9rem; cursor: pointer;">
+                    <input type="checkbox" id="dont-show-today"> 오늘 하루 보지 않기
+                </label>
+                <button onclick="closeEventPopup()"
+                    style="border: none; background: none; font-weight: bold; cursor: pointer;">닫기</button>
+            </div>
+        </div>
     </div>
 
     <!-- Navbar -->
