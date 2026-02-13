@@ -144,23 +144,21 @@ async function updateRoom() {
 // --- Users Management ---
 async function loadUsers() {
     const tableBody = document.getElementById('user-list-body');
-    tableBody.innerHTML = '<tr><td colspan="3">로딩 중... (SQL 업데이트 필요할 수 있음)</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="4">로딩 중...</td></tr>';
 
     try {
-        // Try selecting from 'profiles' table (assuming user ran the SQL)
         const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
 
         if (error) {
-            // Graceful fallback if table doesn't exist
-            if (error.code === '42P01') { // undefined_table
-                tableBody.innerHTML = '<tr><td colspan="3" style="color:red">SQL 스크립트를 실행해주세요 (profiles 테이블 없음)</td></tr>';
+            if (error.code === '42P01') {
+                tableBody.innerHTML = '<tr><td colspan="4" style="color:red">SQL 업데이트 필요 (admin_update.sql 실행)</td></tr>';
                 return;
             }
             throw error;
         }
 
         if (!data || data.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="3">가입된 회원이 없습니다.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="4">가입된 회원이 없습니다.</td></tr>';
             return;
         }
 
@@ -168,20 +166,39 @@ async function loadUsers() {
             <tr>
                 <td>${user.full_name || '이름 없음'}</td>
                 <td>${user.email}</td>
+                <td>
+                    <select onchange="updateUserGrade('${user.id}', this.value)" style="padding:4px;">
+                        <option value="Bronze" ${user.grade === 'Bronze' ? 'selected' : ''}>Bronze</option>
+                        <option value="Silver" ${!user.grade || user.grade === 'Silver' ? 'selected' : ''}>Silver</option>
+                        <option value="Gold" ${user.grade === 'Gold' ? 'selected' : ''}>Gold</option>
+                        <option value="VIP" ${user.grade === 'VIP' ? 'selected' : ''}>VIP</option>
+                    </select>
+                </td>
                 <td>${new Date(user.created_at).toLocaleDateString()}</td>
             </tr>
         `).join('');
 
     } catch (err) {
-        console.error(err);
-        tableBody.innerHTML = `<tr><td colspan="3">데이터 로딩 실패: ${err.message}</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="4">데이터 로딩 실패: ${err.message}</td></tr>`;
+    }
+}
+
+async function updateUserGrade(userId, newGrade) {
+    try {
+        const { error } = await supabase.from('profiles').update({ grade: newGrade }).eq('id', userId);
+        if (error) throw error;
+        // Optional: show toast/notification
+        console.log('Grade updated');
+    } catch (err) {
+        alert('등급 수정 실패: ' + err.message);
+        loadUsers(); // Revert UI
     }
 }
 
 // --- Bookings Management ---
 async function loadBookings() {
     const tableBody = document.getElementById('booking-list-body');
-    tableBody.innerHTML = '<tr><td colspan="5">로딩 중...</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="6">로딩 중...</td></tr>';
 
     try {
         // Mock data or real fetch if table exists
@@ -189,14 +206,14 @@ async function loadBookings() {
 
         if (error) {
             if (error.code === '42P01') {
-                tableBody.innerHTML = '<tr><td colspan="5" style="color:red">SQL 스크립트를 실행해주세요 (bookings 테이블 없음)</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="6" style="color:red">SQL 스크립트를 실행해주세요 (bookings 테이블 없음)</td></tr>';
                 return;
             }
             throw error;
         }
 
         if (!data || data.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="5">예약 내역이 없습니다.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="6">예약 내역이 없습니다.</td></tr>';
             return;
         }
 
@@ -207,11 +224,29 @@ async function loadBookings() {
                 <td>${booking.rooms?.name || '객실'}</td>
                 <td>${booking.check_in} ~ ${booking.check_out}</td>
                 <td><span class="badge ${booking.status}">${booking.status}</span></td>
+                <td>
+                    ${booking.status !== 'cancelled' ?
+                `<button class="btn" style="background:#e74c3c; color:white; font-size:0.8rem; padding:4px 8px;" onclick="cancelBooking('${booking.id}')">취소</button>`
+                : '-'}
+                </td>
             </tr>
         `).join('');
 
     } catch (err) {
-        tableBody.innerHTML = `<tr><td colspan="5">데이터 로딩 실패: ${err.message}</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="6">데이터 로딩 실패: ${err.message}</td></tr>`;
+    }
+}
+
+async function cancelBooking(bookingId) {
+    if (!confirm('정말 이 예약을 취소하시겠습니까?')) return;
+
+    try {
+        const { error } = await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId);
+        if (error) throw error;
+        alert('예약이 취소되었습니다.');
+        loadBookings();
+    } catch (err) {
+        alert('취소 실패: ' + err.message);
     }
 }
 
