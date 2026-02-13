@@ -100,6 +100,23 @@
             font-size: 0.9rem;
             display: none;
         }
+
+        @media (max-width: 480px) {
+            .auth-container {
+                padding: 1rem;
+                padding-top: 60px;
+                /* Reduced top padding */
+            }
+
+            .auth-card {
+                padding: 1.5rem;
+                /* Reduced internal padding */
+            }
+
+            .auth-header h2 {
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 
@@ -170,7 +187,13 @@
                     window.location.replace('index.html');
                 }
             } catch (err) {
-                errorMsg.innerText = '로그인 실패: ' + (err.message === 'Invalid login credentials' ? '이메일 또는 비밀번호가 일치하지 않습니다.' : err.message);
+                let msg = err.message;
+                if (msg === 'Invalid login credentials') {
+                    msg = '이메일 또는 비밀번호가 일치하지 않습니다.';
+                } else if (msg === 'Email not confirmed') {
+                    msg = '이메일 인증이 완료되지 않았습니다.<br>가입하신 이메일의 편지함을 확인해주세요.';
+                }
+                errorMsg.innerHTML = '로그인 실패: ' + msg;
                 errorMsg.style.display = 'block';
             }
         });

@@ -33,6 +33,10 @@ body {
     color: var(--text-dark);
     line-height: 1.6;
     background-color: var(--white);
+    word-break: keep-all;
+    /* Prevent awkward word breaks */
+    overflow-x: hidden;
+    /* Prevent horizontal scroll */
 }
 
 a {
@@ -136,9 +140,11 @@ header {
 
 header.scrolled {
     background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     padding: 1rem 0;
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .nav-container {

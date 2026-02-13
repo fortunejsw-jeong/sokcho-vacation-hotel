@@ -100,6 +100,23 @@
             font-size: 0.9rem;
             display: none;
         }
+
+        @media (max-width: 480px) {
+            .auth-container {
+                padding: 1rem;
+                padding-top: 60px;
+                /* Reduced top padding */
+            }
+
+            .auth-card {
+                padding: 1.5rem;
+                /* Reduced internal padding */
+            }
+
+            .auth-header h2 {
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 
@@ -175,7 +192,11 @@
                 }
 
                 if (data.user) {
-                    alert('회원가입이 완료되었습니다!\n로그인 페이지로 이동합니다.');
+                    if (data.session === null) {
+                        alert('회원가입 확인 메일이 발송되었습니다.\n이메일함에서 인증 링크를 클릭하신 후 로그인해주세요.');
+                    } else {
+                        alert('회원가입이 완료되었습니다!\n로그인 페이지로 이동합니다.');
+                    }
                     window.location.href = 'login.html';
                 }
             } catch (err) {
