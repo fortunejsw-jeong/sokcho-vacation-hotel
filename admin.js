@@ -232,6 +232,22 @@ function openImageModal(roomId) {
     document.getElementById('image-modal').style.display = 'flex';
 }
 
+function loadDefaultImages() {
+    const roomId = document.getElementById('img-room-id').value;
+    const room = adminRoomsData.find(r => r.id == roomId);
+    if (!room) return;
+
+    const defaults = roomExtraImages[room.name] || [];
+    if (defaults.length === 0) {
+        alert('이 객실의 기본 이미지가 없습니다.');
+        return;
+    }
+
+    if (confirm('기존 입력된 URL을 지우고 기본 이미지로 초기화하시겠습니까?\n(초기화 후 저장 버튼을 꼭 눌러주세요)')) {
+        document.getElementById('img-urls').value = defaults.join('\n');
+    }
+}
+
 async function updateRoom() {
     const id = document.getElementById('edit-id').value;
     const price = document.getElementById('edit-price').value;
