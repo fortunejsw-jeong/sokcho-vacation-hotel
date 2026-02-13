@@ -207,12 +207,22 @@ async function fetchAndRenderRooms() {
         if (error) throw error;
 
         // Merge DB data with local extended data
-        roomsData = data.map(room => ({
-            ...room,
-            tags: roomTags[room.name] || [`기준 ${room.base_occupancy}인`, `최대 ${room.max_occupancy}인`],
-            images: roomImages[room.name] || [room.image_url || 'images/default-room.jpg'],
-            thumbnail: room.image_url || 'images/default-room.jpg'
-        }));
+        roomsData = data.map(room => {
+            // Images: Priority DB > Local
+            let images = [];
+            if (room.images && Array.isArray(room.images) && room.images.length > 0) {
+                images = room.images;
+            } else {
+                images = roomImages[room.name] || [room.image_url || 'images/default-room.jpg'];
+            }
+
+            return {
+                ...room,
+                tags: roomTags[room.name] || [`기준 ${room.base_occupancy}인`, `최대 ${room.max_occupancy}인`],
+                images: images,
+                thumbnail: images[0] || room.image_url || 'images/default-room.jpg'
+            };
+        });
 
         renderRooms();
     } catch (err) {

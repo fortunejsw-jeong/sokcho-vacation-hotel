@@ -343,11 +343,15 @@
     <!-- Image Manage Modal -->
     <div id="image-modal" class="modal">
         <div class="modal-content" style="max-width: 600px;">
-            <h3>이미지 관리</h3>
-            <p style="font-size: 0.9rem; color: #666;">
-                드래그 앤 드롭으로 새 이미지를 추가하거나, 아래 URL을 직접 수정하세요.<br>
-                (첫 번째 URL이 대표 이미지가 됩니다)
-            </p>
+            <h3>이미지 관리 - <span id="room-name-display"></span></h3>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <p style="font-size: 0.9rem; color: #666; margin:0;">
+                    드래그 앤 드롭으로 새 이미지를 추가하거나 편집하세요.<br>
+                    (첫 번째 URL이 대표 이미지가 됩니다)
+                </p>
+                <button type="button" class="btn" onclick="loadDefaultImages()"
+                    style="background:#3498db; color:white; font-size:0.8rem;">기본 이미지 불러오기</button>
+            </div>
 
             <form id="image-form" onsubmit="saveRoomImages(event)">
                 <input type="hidden" id="img-room-id">
