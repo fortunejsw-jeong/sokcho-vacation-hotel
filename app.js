@@ -394,8 +394,8 @@ async function checkLoginStatusForBooking() {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-        alert('예약 페이지로 이동합니다. (준비 중)');
-        // window.location.href = 'booking.html';
+        // alert('예약 페이지로 이동합니다.');
+        window.location.href = 'booking.html';
     } else {
         if (confirm('예약을 위해서는 로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?')) {
             window.location.href = 'login.html';
