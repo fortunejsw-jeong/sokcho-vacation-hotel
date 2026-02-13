@@ -342,18 +342,41 @@
 
     <!-- Image Manage Modal -->
     <div id="image-modal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 600px;">
             <h3>이미지 관리</h3>
-            <p>이미지 URL을 한 줄에 하나씩 입력하세요. (첫 번째가 대표 이미지)</p>
+            <p style="font-size: 0.9rem; color: #666;">
+                드래그 앤 드롭으로 새 이미지를 추가하거나, 아래 URL을 직접 수정하세요.<br>
+                (첫 번째 URL이 대표 이미지가 됩니다)
+            </p>
+
             <form id="image-form" onsubmit="saveRoomImages(event)">
                 <input type="hidden" id="img-room-id">
+
+                <!-- Drop Zone -->
+                <div id="room-drop-zone" onclick="document.getElementById('room-files').click()"
+                    style="border: 2px dashed #bdc3c7; padding: 1.5rem; text-align: center; cursor: pointer; border-radius: 8px; margin-bottom: 1rem; background: #fafafa; transition: 0.2s;">
+                    <p style="margin: 0; color: #7f8c8d;">
+                        <i data-lucide="upload-cloud"></i><br>
+                        여기로 이미지를 드래그하거나 클릭하세요 (여러 개 가능)
+                    </p>
+                    <input type="file" id="room-files" accept="image/*" multiple style="display: none;"
+                        onchange="handleRoomFileSelect(event)">
+                </div>
+
+                <!-- Preview Grid (New Uploads) -->
+                <div id="room-preview-area"
+                    style="display: flex; gap: 8px; overflow-x: auto; margin-bottom: 1rem; padding-bottom: 5px;">
+                    <!-- JS Injected -->
+                </div>
+
                 <div class="form-group">
-                    <textarea id="img-urls" style="height: 200px;"
+                    <label>이미지 URL 목록</label>
+                    <textarea id="img-urls" style="height: 150px; font-family: monospace; font-size: 0.85rem;"
                         placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"></textarea>
                 </div>
                 <div class="text-right">
                     <button type="button" class="btn" onclick="closeModal('image-modal')">취소</button>
-                    <button type="submit" class="btn btn-primary">저장하기</button>
+                    <button type="submit" class="btn btn-primary" id="btn-save-room-imgs">저장하기</button>
                 </div>
             </form>
         </div>

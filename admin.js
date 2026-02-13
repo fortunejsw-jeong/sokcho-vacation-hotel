@@ -83,43 +83,133 @@ function openEditModal(roomId) {
     document.getElementById('edit-modal').style.display = 'flex';
 }
 
-function openImageModal(roomId) {
-    const room = adminRoomsData.find(r => r.id == roomId);
-    if (!room) return;
+// --- Room Image Upload Logic ---
+let selectedRoomFiles = [];
 
-    document.getElementById('img-room-id').value = room.id;
+function handleRoomFileSelect(e) {
+    const files = Array.from(e.target.files);
+    addFilesToPreview(files);
+}
 
-    // Join images with newline
-    const images = room.images || [];
-    // If images is a JSON string (unlikely if typed as jsonb but just in case), parse it
-    // Supabase returns JSONB as object/array automatically in JS
-    const urls = Array.isArray(images) ? images : [];
+function addFilesToPreview(files) {
+    selectedRoomFiles = [...selectedRoomFiles, ...files];
+    const previewArea = document.getElementById('room-preview-area');
 
-    document.getElementById('img-urls').value = urls.join('\n');
-    document.getElementById('image-modal').style.display = 'flex';
+    // Clear and Redraw
+    previewArea.innerHTML = '';
+    selectedRoomFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.width = '60px';
+            img.style.height = '60px';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '4px';
+            img.style.border = '1px solid #ddd';
+            img.title = file.name;
+            previewArea.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// Drag & Drop for Rooms
+const roomDropZone = document.getElementById('room-drop-zone');
+if (roomDropZone) {
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        roomDropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    });
+
+    roomDropZone.addEventListener('dragover', () => roomDropZone.style.background = '#e8f0fe');
+    roomDropZone.addEventListener('dragleave', () => roomDropZone.style.background = '#fafafa');
+
+    roomDropZone.addEventListener('drop', (e) => {
+        roomDropZone.style.background = '#fafafa';
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length > 0) {
+            addFilesToPreview(files);
+        }
+    });
 }
 
 async function saveRoomImages(e) {
     e.preventDefault();
-    const roomId = document.getElementById('img-room-id').value;
-    const text = document.getElementById('img-urls').value;
+    const btn = document.getElementById('btn-save-room-imgs');
+    const originalText = btn.innerText;
+    btn.innerText = '업로드 및 저장 중...';
+    btn.disabled = true;
 
-    // Split by newline and filter empty
-    const images = text.split('\n').map(url => url.trim()).filter(url => url.length > 0);
+    const roomId = document.getElementById('img-room-id').value;
+    let currentUrls = document.getElementById('img-urls').value.split('\n').map(u => u.trim()).filter(u => u.length > 0);
 
     try {
+        // 1. Upload New Files
+        if (selectedRoomFiles.length > 0) {
+            for (const file of selectedRoomFiles) {
+                const publicUrl = await uploadRoomFile(file);
+                currentUrls.push(publicUrl);
+            }
+        }
+
+        // 2. Save to DB
         const { error } = await supabase.from('rooms')
-            .update({ images: images }) // images column is jsonb
+            .update({ images: currentUrls }) // images column is jsonb array
             .eq('id', roomId);
 
         if (error) throw error;
 
         alert('이미지가 저장되었습니다.');
         closeModal('image-modal');
-        loadRooms(); // Reload to refresh data
+        loadRooms();
+
+        // Reset
+        selectedRoomFiles = [];
+        document.getElementById('room-preview-area').innerHTML = '';
+
     } catch (err) {
         alert('저장 실패: ' + err.message);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
     }
+}
+
+async function uploadRoomFile(file) {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error } = await supabase.storage
+        .from('room_images')
+        .upload(filePath, file);
+
+    if (error) throw new Error(`업로드 실패 (${file.name}): ${error.message}`);
+
+    const { data: { publicUrl } } = supabase.storage
+        .from('room_images')
+        .getPublicUrl(filePath);
+
+    return publicUrl;
+}
+
+// Reset selected files when opening modal
+function openImageModal(roomId) {
+    const room = adminRoomsData.find(r => r.id == roomId);
+    if (!room) return;
+
+    document.getElementById('img-room-id').value = room.id;
+    selectedRoomFiles = []; // Reset
+    document.getElementById('room-preview-area').innerHTML = ''; // Reset
+
+    const images = room.images || [];
+    const urls = Array.isArray(images) ? images : [];
+
+    document.getElementById('img-urls').value = urls.join('\n');
+    document.getElementById('image-modal').style.display = 'flex';
 }
 
 async function updateRoom() {

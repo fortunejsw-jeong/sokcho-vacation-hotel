@@ -757,18 +757,53 @@
                 <img src="${src}" alt="${room.name}" onclick="document.getElementById('modal-main-img').src = this.src">
             `).join('');
 
-            // Calculate total price if dates are selected
+            // --- Discount Logic ---
+            let userGrade = 'Bronze';
+            let discountRate = 0;
+
+            // Fetch User Grade
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: profile } = await supabase.from('profiles').select('grade').eq('id', user.id).single();
+                if (profile && profile.grade) {
+                    userGrade = profile.grade;
+                }
+            }
+
+            const discountRates = { 'Bronze': 0, 'Silver': 0.05, 'Gold': 0.1, 'VIP': 0.2 };
+            discountRate = discountRates[userGrade] || 0;
+
+            // Calculate Prices
             const checkin = document.getElementById('checkin').value;
             const checkout = document.getElementById('checkout').value;
             const totalPriceSpan = document.getElementById('modal-total-price');
+            let finalPrice = room.price;
+            let originalPrice = room.price;
 
             if (checkin && checkout) {
                 const nights = Math.ceil((new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
                 if (nights > 0) {
-                    const totalPrice = nights * room.price;
-                    document.getElementById('nights-count').textContent = nights;
-                    document.getElementById('total-amount').textContent = `₩${totalPrice.toLocaleString()}`;
-                    totalPriceSpan.style.display = 'inline';
+                    originalPrice = nights * room.price;
+                    const discountAmount = originalPrice * discountRate;
+                    finalPrice = originalPrice - discountAmount;
+
+                    // Update UI with Discount Info
+                    let priceHtml = `총 <span id="nights-count">${nights}</span>박 `;
+
+                    if (discountRate > 0) {
+                        priceHtml += `<span style="text-decoration: line-through; color: #999; font-size: 0.9em;">₩${originalPrice.toLocaleString()}</span> `;
+                        priceHtml += `<span style="color: #e74c3c; font-weight: bold;">₩${finalPrice.toLocaleString()}</span>`;
+                        priceHtml += `<div style="font-size: 0.8rem; color: #2ecc71; margin-top: 4px;">🎉 ${userGrade} 등급 ${discountRate * 100}% 할인 적용</div>`;
+                    } else {
+                        priceHtml += `<span>₩${originalPrice.toLocaleString()}</span>`;
+                        if (user) priceHtml += `<div style="font-size: 0.8rem; color: #999; margin-top: 4px;">(Silver 등급부터 5%~20% 할인이 적용됩니다)</div>`;
+                    }
+
+                    // Clear the static text to avoid duplication if using innerHTML above
+                    // Actually 'modal-total-price' contains 'total-amount' span. Let's rewrite the parent content safely.
+                    totalPriceSpan.innerHTML = priceHtml;
+                    totalPriceSpan.style.display = 'block';
+
                 } else {
                     totalPriceSpan.style.display = 'none';
                 }
@@ -781,24 +816,57 @@
 
             // Book Button Logic
             const bookBtn = document.getElementById('modal-book-btn');
-            // Remove old event listeners by cloning or just setting onclick
-            // Calculate total price based on selected dates
-            bookBtn.onclick = () => {
-                const checkin = document.getElementById('checkin').value;
-                const checkout = document.getElementById('checkout').value;
-                let finalPrice = room.price;
 
-                if (checkin && checkout) {
-                    const nights = Math.ceil((new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
-                    if (nights > 0) {
-                        finalPrice = nights * room.price;
+            // Remove old listener strictly
+            const newBookBtn = bookBtn.cloneNode(true);
+            bookBtn.parentNode.replaceChild(newBookBtn, bookBtn);
+
+            newBookBtn.onclick = async () => {
+                if (!user) {
+                    if (confirm('로그인이 필요한 서비스입니다. 로그인 페이지로 이동하시겠습니까?')) {
+                        window.location.href = 'login.html';
                     }
+                    return;
                 }
 
-                bookRoom(room.id, room.name, finalPrice);
+                // Recalculate strictly before booking
+                const checkin = document.getElementById('checkin').value;
+                const checkout = document.getElementById('checkout').value;
+
+                if (!checkin || !checkout) {
+                    alert('체크인/체크아웃 날짜를 선택해주세요.');
+                    return;
+                }
+
+                const nights = Math.ceil((new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
+                if (nights <= 0) {
+                    alert('유효하지 않은 날짜입니다.');
+                    return;
+                }
+
+                const basePrice = nights * room.price;
+                const discount = basePrice * discountRate;
+                const payAmount = basePrice - discount;
+
+                requestPayment(room.name, payAmount, room.id, checkin, checkout, userGrade);
             };
 
-            // Show Modal - ADD .active CLASS TO MAKE IT VISIBLE!
+            async function requestPayment(roomName, amount, roomId, checkin, checkout, userGrade) {
+                const clientKey = 'test_ck_P24xLea5zVAjlOmn19D38QAMYNwW'; // Test Key
+                const tossPayments = TossPayments(clientKey);
+
+                // Generate Order ID
+                const orderId = 'ORDER_' + new Date().getTime();
+
+                tossPayments.requestPayment('카드', {
+                    amount: amount,
+                    orderId: orderId,
+                    orderName: `${roomName} (${userGrade}할인적용)`,
+                    customerName: user.user_metadata.full_name || 'Sokcho Guest', // Should fetch from profile if possible
+                    successUrl: window.location.origin + `/success.html?room_id=${roomId}&check_in=${checkin}&check_out=${checkout}`,
+                    failUrl: window.location.origin + '/fail.html',
+                });
+            }      // Show Modal - ADD .active CLASS TO MAKE IT VISIBLE!
             modal.classList.add('active');
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
 
