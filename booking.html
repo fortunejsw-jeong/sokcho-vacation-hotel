@@ -714,7 +714,7 @@
 
         // --- Modal Logic ---
 
-        function openRoomDetail(roomId) {
+        async function openRoomDetail(roomId) {
             console.log('openRoomDetail called with ID:', roomId);
             // ID로 객실 데이터 찾기
             const room = allRoomsData.find(r => r.id == roomId); // loose equality for string/number match
@@ -740,20 +740,22 @@
                 <span class="tag">최대 ${room.max_occupancy}인</span>
             `;
 
-            // Images
-            const mainImgSrc = room.image_url || 'images/default-room.jpg';
-            // Start with main image
+            // Images Logic
+            // Priority: DB 'images' column > Hardcoded 'roomExtraImages'
+            let galleryImages = [];
+
+            if (room.images && Array.isArray(room.images) && room.images.length > 0) {
+                galleryImages = room.images;
+            } else {
+                galleryImages = roomExtraImages[room.name] || [];
+            }
+
+            // Ensures main image is correct (first of gallery or room.image_url)
+            const mainImgSrc = galleryImages.length > 0 ? galleryImages[0] : (room.image_url || 'images/default-room.jpg');
             mainImg.src = mainImgSrc;
 
-            // Extra Images Logic
-            // If room name is in our extra list, use those. Otherwise just the main one.
-            // Also include the main image in the list if it's not already there?
-            // Let's just use the explicit list from roomExtraImages if available, prepending the main image if it's not in there.
-
-            let allImages = [];
-            // Sub Images (if available from roomExtraImages)
-            const extraImages = roomExtraImages[room.name] || [];
-            subImagesDiv.innerHTML = extraImages.map(src => `
+            // Render Sub Images
+            subImagesDiv.innerHTML = galleryImages.map(src => `
                 <img src="${src}" alt="${room.name}" onclick="document.getElementById('modal-main-img').src = this.src">
             `).join('');
 
