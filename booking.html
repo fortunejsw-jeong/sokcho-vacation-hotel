@@ -819,55 +819,82 @@
             // Book Button Logic
             const bookBtn = document.getElementById('modal-book-btn');
 
-            // Remove old listener strictly
+            // Clone to remove old listeners
             const newBookBtn = bookBtn.cloneNode(true);
             bookBtn.parentNode.replaceChild(newBookBtn, bookBtn);
 
             newBookBtn.onclick = async () => {
-                if (!user) {
-                    if (confirm('로그인이 필요한 서비스입니다. 로그인 페이지로 이동하시겠습니까?')) {
-                        window.location.href = 'login.html';
+                console.log('Book button clicked');
+
+                try {
+                    // 1. Check Login
+                    if (!user) {
+                        if (confirm('예약을 하려면 로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?')) {
+                            window.location.href = 'login.html';
+                        }
+                        return;
                     }
-                    return;
+
+                    // 2. Get Input Values
+                    const checkin = document.getElementById('checkin').value;
+                    const checkout = document.getElementById('checkout').value;
+
+                    if (!checkin || !checkout) {
+                        alert('체크인과 체크아웃 날짜를 선택해주세요.');
+                        return;
+                    }
+
+                    if (checkin >= checkout) {
+                        alert('체크아웃 날짜는 체크인 날짜보다 이후여야 합니다.');
+                        return;
+                    }
+
+                    // 3. Calculate Amount
+                    const nights = Math.ceil((new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
+                    if (nights <= 0) {
+                        alert('유효하지 않은 숙박 기간입니다.');
+                        return;
+                    }
+
+                    const basePrice = nights * room.price;
+                    const discount = Math.floor(basePrice * discountRate);
+                    const payAmount = basePrice - discount;
+
+                    console.log(`Booking: Room ${room.name}, Nights ${nights}, Amount ${payAmount}`);
+
+                    // 4. Request Payment
+                    await requestPayment(room.name, payAmount, room.id, checkin, checkout, userGrade);
+
+                } catch (err) {
+                    console.error('Booking Error:', err);
+                    alert('예약 처리 중 오류가 발생했습니다: ' + err.message);
                 }
-
-                // Recalculate strictly before booking
-                const checkin = document.getElementById('checkin').value;
-                const checkout = document.getElementById('checkout').value;
-
-                if (!checkin || !checkout) {
-                    alert('체크인/체크아웃 날짜를 선택해주세요.');
-                    return;
-                }
-
-                const nights = Math.ceil((new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
-                if (nights <= 0) {
-                    alert('유효하지 않은 날짜입니다.');
-                    return;
-                }
-
-                const basePrice = nights * room.price;
-                const discount = basePrice * discountRate;
-                const payAmount = basePrice - discount;
-
-                requestPayment(room.name, payAmount, room.id, checkin, checkout, userGrade);
             };
 
             async function requestPayment(roomName, amount, roomId, checkin, checkout, userGrade) {
-                const clientKey = 'test_ck_P24xLea5zVAjlOmn19D38QAMYNwW'; // Test Key
-                const tossPayments = TossPayments(clientKey);
+                try {
+                    const clientKey = 'test_ck_P24xLea5zVAjlOmn19D38QAMYNwW'; // Test Key
+                    const tossPayments = TossPayments(clientKey);
 
-                // Generate Order ID
-                const orderId = 'ORDER_' + new Date().getTime();
+                    // Generate Order ID
+                    const orderId = 'ORDER_' + new Date().getTime();
 
-                tossPayments.requestPayment('카드', {
-                    amount: amount,
-                    orderId: orderId,
-                    orderName: `${roomName} (${userGrade}할인적용)`,
-                    customerName: user.user_metadata.full_name || 'Sokcho Guest', // Should fetch from profile if possible
-                    successUrl: window.location.origin + `/success.html?room_id=${roomId}&check_in=${checkin}&check_out=${checkout}`,
-                    failUrl: window.location.origin + '/fail.html',
-                });
+                    await tossPayments.requestPayment('카드', {
+                        amount: amount,
+                        orderId: orderId,
+                        orderName: `${roomName} (${userGrade}할인)`,
+                        customerName: user?.user_metadata?.full_name || 'Sokcho Guest',
+                        successUrl: window.location.origin + `/success.html?room_id=${roomId}&check_in=${checkin}&check_out=${checkout}`,
+                        failUrl: window.location.origin + '/fail.html',
+                    });
+                } catch (e) {
+                    if (e.code === 'USER_CANCEL') {
+                        // User cancelled, ignore
+                    } else {
+                        console.error('Toss Payment Error:', e);
+                        alert('결제 창 호출 실패: ' + e.message);
+                    }
+                }
             }      // Show Modal - ADD .active CLASS TO MAKE IT VISIBLE!
             modal.classList.add('active');
             document.body.style.overflow = 'hidden'; // Prevent background scrolling

@@ -26,6 +26,7 @@ async function signUp(email, password, name) {
         email: email,
         password: password,
         options: {
+            // 변경: 인증 후 메인/로그인 페이지로 이동 (null 방지)
             emailRedirectTo: window.location.origin + '/login.html',
             data: {
                 full_name: name,
