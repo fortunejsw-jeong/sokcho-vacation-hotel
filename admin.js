@@ -14,9 +14,25 @@ async function checkAdminAuth() {
     if (!supabase) return;
     const { data: { user } } = await supabase.auth.getUser();
 
-    const ADMIN_EMAILS = ['dimplekiller@daum.net', 'sokchovac@naver.com'];
+    if (!user) {
+        alert('로그인이 필요합니다.');
+        window.location.replace('login.html');
+        return;
+    }
 
-    if (!user || !ADMIN_EMAILS.includes(user.email)) {
+    // Check DB for admin flag
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+
+    // Fallback for bootstrap: Check hardcoded emails IF DB check fails or returns false
+    // This allows the first admin to get in and run the SQL script
+    const ADMIN_EMAILS = ['dimplekiller@daum.net', 'sokchovac@naver.com'];
+    const isHardcodedAdmin = ADMIN_EMAILS.includes(user.email);
+
+    if (!profile?.is_admin && !isHardcodedAdmin) {
         alert('관리자 권한이 없습니다.');
         window.location.replace('index.html');
     }
@@ -300,12 +316,23 @@ async function loadUsers() {
                         <option value="VIP" ${user.grade === 'VIP' ? 'selected' : ''}>VIP</option>
                     </select>
                 </td>
-                <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                <td>
+                    <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
+                        <input type="checkbox" 
+                            ${user.is_admin ? 'checked' : ''} 
+                            onchange="toggleAdminRole('${user.id}', this.checked)">
+                        관리자
+                    </label>
+                </td>
+                <td>
+                    <button class="btn" style="background-color: #e74c3c; color: white; padding: 4px 8px;" onclick="deleteUser('${user.id}')">삭제</button>
+                </td>
             </tr>
         `).join('');
 
     } catch (err) {
-        tableBody.innerHTML = `<tr><td colspan="4">데이터 로딩 실패: ${err.message}</td></tr>`;
+        console.error(err);
+        tableBody.innerHTML = '<tr><td colspan="6">데이터 로딩 실패: ' + err.message + '</td></tr>';
     }
 }
 
@@ -313,11 +340,48 @@ async function updateUserGrade(userId, newGrade) {
     try {
         const { error } = await supabase.from('profiles').update({ grade: newGrade }).eq('id', userId);
         if (error) throw error;
-        // Optional: show toast/notification
-        console.log('Grade updated');
+        // alert(`등급이 ${newGrade}로 변경되었습니다.`); // Optional feedback
     } catch (err) {
-        alert('등급 수정 실패: ' + err.message);
+        alert('등급 변경 실패: ' + err.message);
+    }
+}
+
+async function toggleAdminRole(userId, isAdmin) {
+    if (!confirm(isAdmin ? '이 사용자를 관리자로 승격시키겠습니까?' : '이 사용자의 관리자 권한을 해제하겠습니까?')) {
+        loadUsers(); // Revert checkbox UI
+        return;
+    }
+
+    try {
+        const { error } = await supabase.rpc('toggle_admin_role', {
+            target_user_id: userId,
+            new_is_admin: isAdmin
+        });
+
+        if (error) throw error;
+        alert('권한이 변경되었습니다.');
+    } catch (err) {
+        console.error(err);
+        alert('권한 변경 실패: ' + err.message);
         loadUsers(); // Revert UI
+    }
+}
+
+async function deleteUser(userId) {
+    if (!confirm('정말로 이 회원을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없으며, 모든 예약 정보가 함께 삭제됩니다.')) {
+        return;
+    }
+
+    try {
+        const { error } = await supabase.rpc('delete_user_by_admin', { target_user_id: userId });
+
+        if (error) throw error;
+
+        alert('회원이 삭제되었습니다.');
+        loadUsers();
+    } catch (err) {
+        console.error(err);
+        alert('삭제 실패: ' + err.message);
     }
 }
 
