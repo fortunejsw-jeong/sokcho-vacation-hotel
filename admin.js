@@ -94,6 +94,8 @@ function openEditModal(roomId) {
     document.getElementById('edit-id').value = room.id;
     document.getElementById('edit-name').value = room.name;
     document.getElementById('edit-price').value = room.price;
+    document.getElementById('edit-base-occ').value = room.base_occupancy;
+    document.getElementById('edit-max-occ').value = room.max_occupancy;
     document.getElementById('edit-desc').value = room.description || '';
 
     document.getElementById('edit-modal').style.display = 'flex';
