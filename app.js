@@ -367,32 +367,46 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function checkEventBanner() {
+    // 1. Force Local Renewal Banner (Priority)
+    const RENEWAL_BANNER_IMG = 'images/popup_renewal.jpg';
+
+    // Check if user hid it for today (Common logic)
+    const today = new Date().toISOString().split('T')[0];
+    const hiddenDate = localStorage.getItem('event_popup_closed_date');
+
+    if (hiddenDate === today) return;
+
+    const popup = document.getElementById('event-popup');
+    const img = document.getElementById('event-popup-img');
+
+    if (!popup || !img) return;
+
+    // Try to use local image first
+    // Note: We assume the file exists as confirmed. 
+    // If you want to fallback to supabase, logic would be more complex (check if file loads).
+    // For now, we hardcode the new banner as requested.
+
+    img.src = RENEWAL_BANNER_IMG;
+    popup.style.display = 'flex';
+
+    /* 
+    // Supabase Logic (Disabled for Renewal)
     if (!supabase) return;
     try {
         const { data, error } = await supabase.from('site_config').select('*');
-        if (error) return; // Silent fail if table missing
+        if (error) return; 
 
         const showBanner = data.find(c => c.key === 'event_banner_show')?.value === 'true';
         const bannerImg = data.find(c => c.key === 'event_banner_img')?.value;
 
         if (showBanner && bannerImg) {
-            // Check if user hid it for today
-            const today = new Date().toISOString().split('T')[0];
-            const hiddenDate = localStorage.getItem('event_popup_closed_date');
-
-            if (hiddenDate === today) return;
-
-            const popup = document.getElementById('event-popup');
-            const img = document.getElementById('event-popup-img');
-
-            if (popup && img) {
-                img.src = bannerImg;
-                popup.style.display = 'flex'; // Use flex for centering (modal-overlay class)
-            }
+             img.src = bannerImg;
+             popup.style.display = 'flex';
         }
     } catch (err) {
         console.log('Banner check failed:', err);
     }
+    */
 }
 
 function closeEventPopup() {
