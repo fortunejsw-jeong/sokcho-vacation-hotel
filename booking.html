@@ -873,8 +873,8 @@
 
             async function requestPayment(roomName, amount, roomId, checkin, checkout, userGrade) {
                 try {
-                    // 환경변수에 저장해둔 포트원 가맹점 식별코드 (현재 임시 테스트용, 추후 발급받은 실제 코드로 교체해야 함)
-                    const storeId = "imp10391932"; // 포트원(아임포트) 테스트 가맹점 식별코드 예시
+                    // 환경변수에 저장해둔 포트원 가맹점 식별코드
+                    const storeId = "imp04816108";
                     
                     IMP.init(storeId); 
 
@@ -980,7 +980,7 @@
 
         // 기존 TossPayments 객체 대신, IMP 콜백 내부 또는 별도 함수로 재구성해야 하지만, 사실상 위 모달 안의 requestPayment가 메인입니다.
         // 호환성을 위해 오래된 함수(bookRoom)도 포트원 SDK로 변경해둡니다.
-        const storeId = "imp10391932";
+        const storeId = "imp04816108";
         IMP.init(storeId);
 
         async function bookRoom(roomId, roomName, price) {
