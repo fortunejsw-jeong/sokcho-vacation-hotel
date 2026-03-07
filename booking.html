@@ -13,7 +13,7 @@
     <!-- Supabase SDK & Toss Payments -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="api/supabase.js"></script>
-    <script src="https://js.tosspayments.com/v1/payment"></script>
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
 
     <link rel="stylesheet" href="style.css">
     <style>
@@ -873,27 +873,38 @@
 
             async function requestPayment(roomName, amount, roomId, checkin, checkout, userGrade) {
                 try {
-                    const clientKey = 'test_ck_Z61JOxRQVEBpvXZ7Glw2rW0X9bAq'; // Correct Key
-                    const tossPayments = TossPayments(clientKey);
+                    // 환경변수에 저장해둔 포트원 가맹점 식별코드 (현재 임시 테스트용, 추후 발급받은 실제 코드로 교체해야 함)
+                    const storeId = "imp10391932"; // 포트원(아임포트) 테스트 가맹점 식별코드 예시
+                    
+                    IMP.init(storeId); 
 
                     // Generate Order ID
                     const orderId = 'ORDER_' + new Date().getTime();
 
-                    await tossPayments.requestPayment('카드', {
+                    // 포트원 결제창 호출 (카카오페이/나이스페이먼츠 등 설정에 따라 다르게 뜰 수 있습니다)
+                    IMP.request_pay({
+                        pg: "html5_inicis", // 기본 테스트용 PG사 설정 (나이스, KG이니시스 등 포트원 대시보드에서 설정한 값 사용 가능)
+                        pay_method: "card",
+                        merchant_uid: orderId,
+                        name: `${roomName} (${userGrade}할인)`,
                         amount: amount,
-                        orderId: orderId,
-                        orderName: `${roomName} (${userGrade}할인)`,
-                        customerName: user?.user_metadata?.full_name || 'Sokcho Guest',
-                        successUrl: window.location.origin + `/success.html?room_id=${roomId}&check_in=${checkin}&check_out=${checkout}`,
-                        failUrl: window.location.origin + '/fail.html',
+                        buyer_email: user?.email || '',
+                        buyer_name: user?.user_metadata?.full_name || 'Sokcho Guest',
+                        buyer_tel: "010-0000-0000", // 테스트용 임시 변수
+                        m_redirect_url: window.location.origin + `/success.html?room_id=${roomId}&check_in=${checkin}&check_out=${checkout}` // 모바일 결제 완료 시 리다이렉트 될 주소
+                    }, function (rsp) { // callback
+                        if (rsp.success) {
+                            // 결제 성공 시 (PC 환경 callback)
+                            window.location.href = window.location.origin + `/success.html?room_id=${roomId}&check_in=${checkin}&check_out=${checkout}`;
+                        } else {
+                            // 결제 실패 시
+                            alert("결제 실패: " + rsp.error_msg);
+                            console.error('Payment Error:', rsp);
+                        }
                     });
                 } catch (e) {
-                    if (e.code === 'USER_CANCEL') {
-                        // User cancelled, ignore
-                    } else {
-                        console.error('Toss Payment Error:', e);
-                        alert('결제 창 호출 실패: ' + e.message);
-                    }
+                    console.error('Payment Initializing Error:', e);
+                    alert('결제 창 호출 실패: ' + e.message);
                 }
             }      // Show Modal - ADD .active CLASS TO MAKE IT VISIBLE!
             modal.classList.add('active');
@@ -967,9 +978,10 @@
 
         // --- Payment Logic (Existing) ---
 
-        // Toss Payments 초기화
-        const clientKey = 'test_ck_Z61JOxRQVEBpvXZ7Glw2rW0X9bAq';
-        const tossPayments = TossPayments(clientKey);
+        // 기존 TossPayments 객체 대신, IMP 콜백 내부 또는 별도 함수로 재구성해야 하지만, 사실상 위 모달 안의 requestPayment가 메인입니다.
+        // 호환성을 위해 오래된 함수(bookRoom)도 포트원 SDK로 변경해둡니다.
+        const storeId = "imp10391932";
+        IMP.init(storeId);
 
         async function bookRoom(roomId, roomName, price) {
             // 1. 로그인 체크
@@ -992,7 +1004,7 @@
                 return;
             }
 
-            // 3. 결제 요청 (Toss Payments)
+            // 3. 결제 요청 (PortOne)
             const orderId = 'order_' + new Date().getTime(); // 고유 주문 번호
             const simpleOrderName = roomName; // 특수문자 제거 등 안전하게
 
@@ -1005,19 +1017,22 @@
             successUrl.searchParams.append('guests', guests);
             successUrl.searchParams.append('user_id', user.id);
 
-            tossPayments.requestPayment('카드', {
+            IMP.request_pay({
+                pg: "html5_inicis", 
+                pay_method: "card",
+                merchant_uid: orderId,
+                name: simpleOrderName,
                 amount: price,
-                orderId: orderId,
-                orderName: simpleOrderName,
-                customerName: user.user_metadata.full_name || '비회원',
-                successUrl: successUrl.toString(),
-                failUrl: origin + '/booking.html',
-            }).catch(function (error) {
-                if (error.code === 'USER_CANCEL') {
-                    // 사용자 취소
+                buyer_email: user.email || '',
+                buyer_name: user.user_metadata.full_name || '비회원',
+                buyer_tel: "010-0000-0000",
+                m_redirect_url: successUrl.toString()
+            }, function (rsp) { 
+                if (rsp.success) {
+                    window.location.href = successUrl.toString();
                 } else {
-                    console.error(error);
-                    alert('결제 초기화 실패: ' + error.message);
+                    alert("결제 실패: " + rsp.error_msg);
+                    console.error(rsp);
                 }
             });
         }
