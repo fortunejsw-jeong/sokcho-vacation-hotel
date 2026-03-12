@@ -66,7 +66,7 @@ async function loadRooms() {
     tableBody.innerHTML = '<tr><td colspan="4">로딩 중...</td></tr>';
 
     try {
-        const { data: rooms, error } = await supabase.from('rooms').select('*').order('price');
+        const { data: rooms, error } = await supabase.from('rooms').select('*').order('price').order('name');
         if (error) throw error;
 
         adminRoomsData = rooms;
