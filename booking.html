@@ -10,10 +10,10 @@
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- Supabase SDK & Toss Payments -->
+    <!-- Supabase SDK & PortOne SDK V2 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="api/supabase.js"></script>
-    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+    <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
 
     <link rel="stylesheet" href="style.css">
     <style>
@@ -911,13 +911,12 @@
 
             async function requestPayment(roomName, amount, roomId, checkin, checkout, userGrade, method) {
                 try {
-                    // 환경변수에 저장해둔 포트원 가맹점 식별코드
-                    const storeId = "imp04816108";
-                    
-                    IMP.init(storeId); 
+                    // 환경변수에 저장해둔 포트원 가맹점 식별코드 & 채널키 (V2)
+                    const storeId = "store-9810030929"; 
+                    const channelKey = "channel-key-cd61581d-0d2a-4a60-9b48-07ad9efa53a9";
 
-                    // Generate Order ID
-                    const orderId = 'ORDER_' + new Date().getTime();
+                    // Generate Unique Payment ID
+                    const paymentId = 'payment_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
 
                     // 리다이렉트 URL 생성 (모바일 및 결제 성공 후 이동)
                     const origin = window.location.origin;
@@ -928,30 +927,36 @@
                     successUrl.searchParams.append('guests', document.getElementById('guests').value);
                     if(user) successUrl.searchParams.append('user_id', user.id);
 
-                    // 포트원 결제창 호출
-                    // pg 파라미터를 생략하면 포트원 관리자 센터에 지정된 기본 PG사가 호출됩니다.
-                    IMP.request_pay({
-                        pay_method: method === 'card' ? 'card' : method, // card, kakaopay, naverpay 등
-                        merchant_uid: orderId,
-                        name: `${roomName} (${userGrade}할인)`,
-                        amount: amount,
-                        buyer_email: user?.email || '',
-                        buyer_name: user?.user_metadata?.full_name || 'Sokcho Guest',
-                        buyer_tel: "010-0000-0000",
-                        m_redirect_url: successUrl.toString() // 모바일 결제 완료 시 리다이렉트 될 주소
-                    }, function (rsp) { // callback
-                        if (rsp.success) {
-                            // 결제 성공 시 (PC 환경 callback)
-                            successUrl.searchParams.append('imp_uid', rsp.imp_uid);
-                            successUrl.searchParams.append('merchant_uid', rsp.merchant_uid);
-                            successUrl.searchParams.append('amount', amount); // 추가: 가격 전달
-                            window.location.href = successUrl.toString();
-                        } else {
-                            // 결제 실패 시
-                            alert("결제 실패: " + rsp.error_msg);
-                            console.error('Payment Error:', rsp);
-                        }
+                    // 포트원 V2 결제창 호출
+                    const response = await PortOne.requestPayment({
+                        storeId: storeId,
+                        channelKey: channelKey,
+                        paymentId: paymentId,
+                        orderName: `${roomName} (${userGrade}할인)`,
+                        totalAmount: amount,
+                        currency: "CURRENCY_KRW",
+                        payMethod: method === 'card' ? 'CARD' : method.toUpperCase(),
+                        customer: {
+                            email: user?.email || '',
+                            fullName: user?.user_metadata?.full_name || 'Sokcho Guest',
+                            phoneNumber: "010-0000-0000"
+                        },
+                        redirectUrl: successUrl.toString() // 모바일 결제 완료 시 리다이렉트 될 주소
                     });
+
+                    // PC 환경 결제 결과 처리
+                    if (response.code != null) {
+                        // 오류 발생
+                        alert("결제 실패: " + response.message);
+                        console.error('Payment Error:', response);
+                        return;
+                    }
+
+                    // 결제 성공 시
+                    successUrl.searchParams.append('paymentId', response.paymentId);
+                    successUrl.searchParams.append('amount', amount);
+                    window.location.href = successUrl.toString();
+
                 } catch (e) {
                     console.error('Payment Initializing Error:', e);
                     alert('결제 창 호출 실패: ' + e.message);

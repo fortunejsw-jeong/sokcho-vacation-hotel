@@ -123,10 +123,10 @@
         // URL 파라미터 파싱
         const urlParams = new URLSearchParams(window.location.search);
         
-        // 포트원 파라미터 (PC 결제 완료 후, 또는 모바일 리다이렉트 후)
-        const impUid = urlParams.get('imp_uid');
-        const merchantUid = urlParams.get('merchant_uid');
-        const impSuccess = urlParams.get('imp_success'); // 모바일 환경에서 성공여부
+        // 포트원 파라미터 (V2 환경)
+        const paymentId = urlParams.get('paymentId');
+        const code = urlParams.get('code'); // 실패 시 존재
+        const message = urlParams.get('message'); // 실패 메시지
         
         // 예약 정보 파라미터 (booking.html 에서 넘겨준 값들)
         const roomId = urlParams.get('room_id');
@@ -134,18 +134,17 @@
         const checkOut = urlParams.get('check_out');
         const guests = urlParams.get('guests');
         const userId = urlParams.get('user_id');
-        const amount = urlParams.get('amount') || urlParams.get('paid_amount'); // PC에서는 직접 넘기거나, 모바일에서는 확인 필요할 수 있음
+        const amount = urlParams.get('amount');
 
         async function processBooking() {
-            // 모바일 환경 결제 실패 처리
-            if (impSuccess === 'false') {
-                const errorMsg = urlParams.get('error_msg') || '결제 혹은 취소되었습니다.';
-                showError('결제 실패: ' + errorMsg);
+            // 결제 실패 처리 (V2 SDK 모바일 이탈 또는 에러 시 code값이 반환됨)
+            if (code != null) {
+                showError('결제 실패: ' + (message || '결제가 취소되었거나 오류가 발생했습니다.'));
                 return;
             }
 
-            // 필수 파라미터 검증 (impUid 또는 merchantUid가 있어야 함)
-            if ((!impUid && !merchantUid) || !roomId || !checkIn || !checkOut) {
+            // 필수 파라미터 검증 (paymentId가 있어야 함)
+            if (!paymentId || !roomId || !checkIn || !checkOut) {
                 showError('결제 정보 또는 예약 정보가 유효하지 않습니다.');
                 return;
             }
@@ -174,7 +173,7 @@
                 // 성공 화면 표시
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('success-content').style.display = 'block';
-                document.getElementById('order-id').innerText = merchantUid || impUid || '알 수 없음';
+                document.getElementById('order-id').innerText = paymentId;
                 document.getElementById('amount').innerText = parseInt(amount).toLocaleString() + '원';
 
             } catch (err) {
