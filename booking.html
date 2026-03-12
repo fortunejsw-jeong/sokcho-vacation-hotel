@@ -567,7 +567,7 @@
                             총 <span id="nights-count">0</span>박 <span id="total-amount">₩0</span>
                         </span>
                         <div class="payment-buttons" id="payment-buttons-container">
-                            <button class="btn-reserve btn-card" data-method="card">휴대폰결제 예약하기 (다날)</button>
+                            <button class="btn-reserve btn-card" data-method="card">신용카드 / 간편결제 예약하기</button>
                             <button class="btn-reserve btn-kakao" data-method="kakaopay" style="display:none;">
                                 카카오페이 예약
                             </button>
@@ -912,7 +912,7 @@
                 try {
                     // 환경변수에 저장해둔 포트원 가맹점 식별코드 & 채널키 (V2)
                     const storeId = "store-43a69ed8-461f-4d3c-a5ff-8f2b5e1ee6da"; 
-                    const channelKey = "channel-key-cd61581d-0d2a-4a60-9b48-07ad9efa53a9";
+                    const channelKey = "channel-key-253c644a-cfcb-4c24-8090-27af9da29690"; // 새로 발급된 이니시스 전용 채널키
 
                     // Generate Unique Payment ID
                     const paymentId = 'payment_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
@@ -927,7 +927,7 @@
                     if(user) successUrl.searchParams.append('user_id', user.id);
 
                     // 포트원 V2 결제창 호출
-                    // 주의: 다날페이(TPAY)의 경우 CARD를 지원하지 않으므로 간편결제(EASY_PAY) 방식을 지정합니다.
+                    // KG 이니시스 채널의 기본 카드 결제(CARD) 지정
                     const response = await PortOne.requestPayment({
                         storeId: storeId,
                         channelKey: channelKey,
@@ -935,7 +935,7 @@
                         orderName: `${roomName} (${userGrade}할인)`,
                         totalAmount: amount,
                         currency: "CURRENCY_KRW",
-                        payMethod: "MOBILE", // 다날 TPAY는 일반적으로 휴대폰결제(MOBILE)만 지원합니다.
+                        payMethod: "CARD", 
                         customer: {
                             email: user?.email || '',
                             fullName: user?.user_metadata?.full_name || 'Sokcho Guest',
