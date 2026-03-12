@@ -924,15 +924,24 @@
                     let payMethod = "card";
                     
                     if (method === 'kakaopay') {
-                        pgProvider = "kakaopay";
+                        pgProvider = "kakaopay.TC0ONETIME";
                         payMethod = "kakaopay";
                     } else if (method === 'naverpay') {
-                        pgProvider = "naverpay"; // 네이버페이 전용 PG 연동일 경우, 또는 html5_inicis.INIpayTest 같이 이니시스 하위 네이버페이일경우 확인 필요 (일단 naverpay로 지정)
+                        pgProvider = "naverpay";
                         payMethod = "naverpay";
                     } else {
-                        pgProvider = "html5_inicis"; // 일반 신용카드 (KG이니시스 예시)
+                        pgProvider = "html5_inicis"; // 일반 신용카드
                         payMethod = "card";
                     }
+
+                    // 리다이렉트 URL 생성 (모바일 및 결제 성공 후 이동)
+                    const origin = window.location.origin;
+                    const successUrl = new URL(origin + '/success.html');
+                    successUrl.searchParams.append('room_id', roomId);
+                    successUrl.searchParams.append('check_in', checkin);
+                    successUrl.searchParams.append('check_out', checkout);
+                    successUrl.searchParams.append('guests', document.getElementById('guests').value);
+                    if(user) successUrl.searchParams.append('user_id', user.id);
 
                     // 포트원 결제창 호출
                     IMP.request_pay({
@@ -943,12 +952,15 @@
                         amount: amount,
                         buyer_email: user?.email || '',
                         buyer_name: user?.user_metadata?.full_name || 'Sokcho Guest',
-                        buyer_tel: "010-0000-0000", // 테스트용 임시 변수
-                        m_redirect_url: window.location.origin + `/success.html?room_id=${roomId}&check_in=${checkin}&check_out=${checkout}` // 모바일 결제 완료 시 리다이렉트 될 주소
+                        buyer_tel: "010-0000-0000",
+                        m_redirect_url: successUrl.toString() // 모바일 결제 완료 시 리다이렉트 될 주소
                     }, function (rsp) { // callback
                         if (rsp.success) {
                             // 결제 성공 시 (PC 환경 callback)
-                            window.location.href = window.location.origin + `/success.html?room_id=${roomId}&check_in=${checkin}&check_out=${checkout}`;
+                            successUrl.searchParams.append('imp_uid', rsp.imp_uid);
+                            successUrl.searchParams.append('merchant_uid', rsp.merchant_uid);
+                            successUrl.searchParams.append('amount', amount); // 추가: 가격 전달
+                            window.location.href = successUrl.toString();
                         } else {
                             // 결제 실패 시
                             alert("결제 실패: " + rsp.error_msg);
@@ -959,7 +971,9 @@
                     console.error('Payment Initializing Error:', e);
                     alert('결제 창 호출 실패: ' + e.message);
                 }
-            }      // Show Modal - ADD .active CLASS TO MAKE IT VISIBLE!
+            }
+            
+            // Show Modal - ADD .active CLASS TO MAKE IT VISIBLE!
             modal.classList.add('active');
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
 
@@ -1002,8 +1016,8 @@
             const nights = Math.ceil((new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
             const totalPrice = nights * room.price;
 
-            // Call bookRoom with total price
-            bookRoom(roomId, room.name, totalPrice);
+            // 모달 안에서 기존 방식 대신 requestPayment를 직접 호출하도록 안내.
+            alert('상세보기 창에서 신용카드, 카카오페이, 네이버페이 버튼을 클릭하여 결제를 진행해주세요.');
         }
 
         function changeMainImage(src) {
@@ -1029,66 +1043,9 @@
             if (e.target === this) closeRoomDetail();
         });
 
-        // --- Payment Logic (Existing) ---
-
-        // 기존 TossPayments 객체 대신, IMP 콜백 내부 또는 별도 함수로 재구성해야 하지만, 사실상 위 모달 안의 requestPayment가 메인입니다.
-        // 호환성을 위해 오래된 함수(bookRoom)도 포트원 SDK로 변경해둡니다.
+        // --- Payment Initializer ---
         const storeId = "imp04816108";
         IMP.init(storeId);
-
-        async function bookRoom(roomId, roomName, price) {
-            // 1. 로그인 체크
-            const user = await getCurrentUser();
-            if (!user) {
-                if (confirm('예약을 하려면 로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?')) {
-                    window.location.href = 'login.html';
-                }
-                return;
-            }
-
-            // 2. 날짜 및 인원 가져오기
-            const checkin = document.getElementById('checkin').value;
-            const checkout = document.getElementById('checkout').value;
-            const guests = document.getElementById('guests').value;
-
-            // 유효성 검사
-            if (!checkin || !checkout) {
-                alert('체크인과 체크아웃 날짜를 선택해주세요.');
-                return;
-            }
-
-            // 3. 결제 요청 (PortOne)
-            const orderId = 'order_' + new Date().getTime(); // 고유 주문 번호
-            const simpleOrderName = roomName; // 특수문자 제거 등 안전하게
-
-            // URL 생성
-            const origin = window.location.origin;
-            const successUrl = new URL(origin + '/success.html');
-            successUrl.searchParams.append('room_id', roomId);
-            successUrl.searchParams.append('check_in', checkin);
-            successUrl.searchParams.append('check_out', checkout);
-            successUrl.searchParams.append('guests', guests);
-            successUrl.searchParams.append('user_id', user.id);
-
-            IMP.request_pay({
-                pg: "html5_inicis", 
-                pay_method: "card",
-                merchant_uid: orderId,
-                name: simpleOrderName,
-                amount: price,
-                buyer_email: user.email || '',
-                buyer_name: user.user_metadata.full_name || '비회원',
-                buyer_tel: "010-0000-0000",
-                m_redirect_url: successUrl.toString()
-            }, function (rsp) { 
-                if (rsp.success) {
-                    window.location.href = successUrl.toString();
-                } else {
-                    alert("결제 실패: " + rsp.error_msg);
-                    console.error(rsp);
-                }
-            });
-        }
 
         console.log('=== SCRIPT LOADED ===');
         console.log('Supabase available:', typeof supabase !== 'undefined');
