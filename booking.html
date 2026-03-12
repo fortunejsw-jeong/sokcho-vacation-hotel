@@ -566,9 +566,8 @@
                             style="display:none; font-size: 1.2rem; color: #d32f2f; margin-top: 0.5rem;">
                             총 <span id="nights-count">0</span>박 <span id="total-amount">₩0</span>
                         </span>
-                        
                         <div class="payment-buttons" id="payment-buttons-container">
-                            <button class="btn-reserve btn-card" data-method="card">신용카드 / 간편결제 예약하기</button>
+                            <button class="btn-reserve btn-card" data-method="card">휴대폰결제 예약하기 (다날)</button>
                             <button class="btn-reserve btn-kakao" data-method="kakaopay" style="display:none;">
                                 카카오페이 예약
                             </button>
@@ -936,7 +935,7 @@
                         orderName: `${roomName} (${userGrade}할인)`,
                         totalAmount: amount,
                         currency: "CURRENCY_KRW",
-                        payMethod: "EASY_PAY", // 다날 TPAY와 호환되는 가맹점 결제수단 설정
+                        payMethod: "MOBILE", // 다날 TPAY는 일반적으로 휴대폰결제(MOBILE)만 지원합니다.
                         customer: {
                             email: user?.email || '',
                             fullName: user?.user_metadata?.full_name || 'Sokcho Guest',
