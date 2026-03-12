@@ -202,8 +202,7 @@ async function fetchAndRenderRooms() {
         const { data, error } = await supabase
             .from('rooms')
             .select('*')
-            .order('price')
-            .order('name');
+            .order('id');
 
         if (error) throw error;
 

@@ -678,8 +678,8 @@
 
             try {
                 // debugLog('Fetching rooms from Supabase...');
-                // DB에서 객실 정보 조회 (가격순, 그 다음 이름순(가나다) 정렬)
-                const { data: rooms, error } = await supabase.from('rooms').select('*').order('price').order('name');
+                // DB에서 객실 정보 조회 (고정된 순서: 생성/ID 순)
+                const { data: rooms, error } = await supabase.from('rooms').select('*').order('id');
 
                 if (error) {
                     throw error;
