@@ -928,7 +928,7 @@
                     if(user) successUrl.searchParams.append('user_id', user.id);
 
                     // 포트원 V2 결제창 호출
-                    // 주의: payMethod를 명시하지 않거나 지원하지 않는 PG(예: 다날)에 강제로 CARD를 지정하면 에러가 발생하므로 생략하거나 채널 설정에 맡깁니다.
+                    // 주의: 다날페이(TPAY)의 경우 CARD를 지원하지 않으므로 간편결제(EASY_PAY) 방식을 지정합니다.
                     const response = await PortOne.requestPayment({
                         storeId: storeId,
                         channelKey: channelKey,
@@ -936,6 +936,7 @@
                         orderName: `${roomName} (${userGrade}할인)`,
                         totalAmount: amount,
                         currency: "CURRENCY_KRW",
+                        payMethod: "EASY_PAY", // 다날 TPAY와 호환되는 가맹점 결제수단 설정
                         customer: {
                             email: user?.email || '',
                             fullName: user?.user_metadata?.full_name || 'Sokcho Guest',
