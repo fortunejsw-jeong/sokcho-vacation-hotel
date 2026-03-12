@@ -928,6 +928,7 @@
                     if(user) successUrl.searchParams.append('user_id', user.id);
 
                     // 포트원 V2 결제창 호출
+                    // 주의: payMethod를 명시하지 않거나 지원하지 않는 PG(예: 다날)에 강제로 CARD를 지정하면 에러가 발생하므로 생략하거나 채널 설정에 맡깁니다.
                     const response = await PortOne.requestPayment({
                         storeId: storeId,
                         channelKey: channelKey,
@@ -935,7 +936,6 @@
                         orderName: `${roomName} (${userGrade}할인)`,
                         totalAmount: amount,
                         currency: "CURRENCY_KRW",
-                        payMethod: method === 'card' ? 'CARD' : method.toUpperCase(),
                         customer: {
                             email: user?.email || '',
                             fullName: user?.user_metadata?.full_name || 'Sokcho Guest',
