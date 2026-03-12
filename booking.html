@@ -918,21 +918,6 @@
 
                     // Generate Order ID
                     const orderId = 'ORDER_' + new Date().getTime();
-                    
-                    // 결제 수단에 따른 PG사 및 method 파라미터 분기
-                    let pgProvider = "";
-                    let payMethod = "card";
-                    
-                    if (method === 'kakaopay') {
-                        pgProvider = "kakaopay.TC0ONETIME"; // 카카오페이 테스트 상점코드
-                        payMethod = "card"; // 카카오페이도 내부적으로 card 인 경우가 많음, 혹은 환경에 따라 'kakaopay'
-                    } else if (method === 'naverpay') {
-                        pgProvider = "html5_inicis.INIpayTest"; // 이니시스 웹표준 테스트 (네이버페이 지원)
-                        payMethod = "card"; // 네이버페이는 이니시스 등 PG 단말을 거치는 경우 card
-                    } else {
-                        pgProvider = "html5_inicis"; // 일반 신용카드
-                        payMethod = "card";
-                    }
 
                     // 리다이렉트 URL 생성 (모바일 및 결제 성공 후 이동)
                     const origin = window.location.origin;
@@ -944,9 +929,9 @@
                     if(user) successUrl.searchParams.append('user_id', user.id);
 
                     // 포트원 결제창 호출
+                    // pg 파라미터를 생략하면 포트원 관리자 센터에 지정된 기본 PG사가 호출됩니다.
                     IMP.request_pay({
-                        pg: pgProvider, 
-                        pay_method: payMethod,
+                        pay_method: method === 'card' ? 'card' : method, // card, kakaopay, naverpay 등
                         merchant_uid: orderId,
                         name: `${roomName} (${userGrade}할인)`,
                         amount: amount,
